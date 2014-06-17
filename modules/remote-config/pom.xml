@@ -4,17 +4,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.monroe.team.toolsbox</groupId>
+        <groupId>org.monroe.team.remote.config</groupId>
         <artifactId>suite</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.monroe.team.toolsbox</groupId>
-    <artifactId>remote-config</artifactId>
+    <groupId>org.monroe.team.remote-config</groupId>
+    <artifactId>remote-config-rest</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Rest Server: Remote Config Module</name>
+    <name>Remote Config: Rest Services</name>
 
     <dependencies>
 
