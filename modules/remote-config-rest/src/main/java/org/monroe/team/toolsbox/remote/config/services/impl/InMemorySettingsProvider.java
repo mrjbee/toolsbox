@@ -105,7 +105,7 @@ public class InMemorySettingsProvider implements SettingsProvider{
         public <ResultType> ResultType get(Class<ResultType> resultType) {
             if (String.class.equals(resultType)){
                 return (ResultType) Integer.toString(value);
-            } else if (Integer.class.equals(value)){
+            } else if (Integer.class.equals(resultType)){
                 return (ResultType) value;
             } else {
                 throw new IllegalStateException("Unexpected class");
@@ -116,7 +116,7 @@ public class InMemorySettingsProvider implements SettingsProvider{
         public <ResultType> void set(Object value, Class<ResultType> resultType) {
             if (String.class.equals(resultType)){
                 this.value = Integer.parseInt((String) value);
-            } else if (Integer.class.equals(value)){
+            } else if (Integer.class.equals(resultType)){
                 this.value = (Integer) value;
             } else {
                 throw new IllegalStateException("Unexpected class");

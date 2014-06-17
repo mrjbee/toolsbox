@@ -3,10 +3,7 @@ package org.monroe.team.toolsbox.transport.rest;
 import org.apache.camel.Body;
 import org.apache.camel.Header;
 import org.apache.camel.builder.RouteBuilder;
-import org.monroe.team.toolsbox.remote.config.us.GetSetting;
-import org.monroe.team.toolsbox.remote.config.us.GetSettingDefinition;
-import org.monroe.team.toolsbox.remote.config.us.SetSetting;
-import org.monroe.team.toolsbox.remote.config.us.SetSettingDefinition;
+import org.monroe.team.toolsbox.remote.config.us.*;
 
 import javax.inject.Named;
 
@@ -27,10 +24,16 @@ public class RemoteConfigSettingRoute extends RouteBuilder{
                 .setBody(method(RemoteConfigSettingRoute.class,"createSetSettingRequest"))
                 .doTry()
                     .bean(SetSetting.class, "perform(*)")
-                    .setBody(simple("body.value"))
                 .doCatch(SetSettingDefinition.NotAllowedSettingException.class)
-                    .setHeader("CamelHttpResponseCode",constant(400));
-
+                    .setHeader("CamelHttpResponseCode",constant(400))
+                    .stop()
+                .end()
+                .setBody(simple("body.value"))
+                .choice()
+                    .when().simple("${in.header.settingName} == 'status'")
+                        .bean(UpdateStatusStatistics.class, "perform(*)")
+                    .end()
+                .end();
     }
 
     public static SetSettingDefinition.SetSettingRequest createSetSettingRequest(
