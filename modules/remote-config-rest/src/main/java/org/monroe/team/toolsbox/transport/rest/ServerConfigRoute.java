@@ -4,13 +4,19 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.Processor;
 import org.apache.camel.spring.SpringRouteBuilder;
+import org.monroe.team.toolsbox.remote.config.services.SettingsProvider;
 import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Component
 public class ServerConfigRoute  extends SpringRouteBuilder{
+
+    @Inject
+    private SettingsProvider settingsProvider;
+
 
     private final Properties props= new Properties();
     @Override
