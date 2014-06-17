@@ -1,0 +1,3 @@
+[submodule "toolsbox"]
+	path = toolsbox
+	url = https://github.com/mrjbee/toolsbox.git
