@@ -17,7 +17,7 @@
     </parent>
 
     <modules>
-        <module>modules/remote-config</module>
+        <module>modules/remote-config-rest</module>
         <module>modules/remote-config-ui-mobile</module>
     </modules>
 </project>
