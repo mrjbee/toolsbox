@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Appenders>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <RollingFile name="FRAMEWORKS"
+                     fileName="logs/framework.log"
+                     filePattern="logs/framework-%i.log">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5.000 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+
+        <RollingFile name="CORE"
+                     fileName="logs/core.log"
+                     filePattern="logs/core-%i.log">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5.000 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+        <RollingFile name="FEATURE"
+                     fileName="logs/feature.log"
+                     filePattern="logs/feature-%i.log">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5.000 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+
+        <logger name="toolsbox.feature" level="info" additivity="false">
+            <appender-ref ref="FEATURE"/>
+        </logger>
+        <logger name="toolsbox" level="info" additivity="false">
+            <appender-ref ref="CORE"/>
+        </logger>
+        <logger name="org" level="warn" additivity="false">
+            <appender-ref ref="FRAMEWORKS"/>
+        </logger>
+        <logger name="com" level="warn" additivity="false">
+            <appender-ref ref="FRAMEWORKS"/>
+        </logger>
+        <Root level="WARN">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
