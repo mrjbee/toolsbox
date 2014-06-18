@@ -19,5 +19,6 @@
     <modules>
         <module>modules/remote-config-rest</module>
         <module>modules/remote-config-ui-mobile</module>
+        <module>modules/swagger</module>
     </modules>
 </project>

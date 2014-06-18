@@ -1,0 +1,14 @@
+{
+  "apiVersion": "1.0.0",
+  "swaggerVersion": "1.2",
+  "apis": [
+    {
+      "path": "-impl/setting",
+      "description": "Operations about server settings"
+    }
+  ],
+  "info": {
+    "title": "Remote Config Server",
+    "description": "This is a Remote Config server API console."
+  }
+}
