@@ -8,7 +8,7 @@ from requests.exceptions import Timeout
 import time
 
 global serverUrl 
-serverUrl = "http://localhost:9090/remote-config-rest/rest"
+serverUrl = "http://194.29.62.160:8880/remote-control-api/rest"
 global basicAuth
 basicAuth = HTTPBasicAuth('rest', 'rest')
 global defaultTimeOut
@@ -70,8 +70,8 @@ if sleepminutes == 0:
 	print "No sleep requested. Going to exit"
 	sys.exit(0)
 	
-sleepminutes = 2
 print "Sleep requested. Going to sleep for %s minutes" % (sleepminutes)
 bashCommand = "sudo rtcwake -s %s -m off"%(sleepminutes*60)
+
 #Uncomment before deploy on prod
 #os.system(bashCommand)

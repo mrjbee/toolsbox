@@ -26,6 +26,7 @@
     </dependencies>
 
     <build>
+        <finalName>remote-control</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
