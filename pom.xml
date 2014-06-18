@@ -28,6 +28,8 @@
         <module>modules/lib-restlet</module>
         <module>modules/lib-security</module>
         <module>modules/example-rest</module>
+        <module>modules/lib-swagger</module>
+        <module>modules/swagger-example</module>
     </modules>
 
 
