@@ -3,12 +3,12 @@
   "swaggerVersion": "1.2",
   "apis": [
     {
-      "path": "-impl/setting",
-      "description": "Operations about server settings"
+      "path": "-impl/config",
+      "description": "Operations about server config"
     }
   ],
   "info": {
-    "title": "Remote Config Server",
-    "description": "This is a Remote Config server API console."
+    "title": "Remfly Server",
+    "description": "This is a 'Remfly' server API console."
   }
 }
