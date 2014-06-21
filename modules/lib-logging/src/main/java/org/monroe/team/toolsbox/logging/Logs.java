@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 final public class Logs {
 
-    private final static Logger core = build("Core");
+    public final static Logger core = build("Core");
 
     final public static Logger forFeature(String featureName) {
         return build("feature."+featureName);
