@@ -45,10 +45,10 @@
         <logger name="toolsbox" level="info" additivity="false">
             <appender-ref ref="CORE"/>
         </logger>
-        <logger name="org" level="warn" additivity="false">
+        <logger name="org" level="warn" additivity="true">
             <appender-ref ref="FRAMEWORKS"/>
         </logger>
-        <logger name="com" level="warn" additivity="false">
+        <logger name="com" level="warn" additivity="true">
             <appender-ref ref="FRAMEWORKS"/>
         </logger>
         <Root level="WARN">

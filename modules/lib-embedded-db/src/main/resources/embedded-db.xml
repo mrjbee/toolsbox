@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+                           http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+          p:packagesToScan="org.monroe.team.toolsbox.entities"
+          p:dataSource-ref="dataSource"
+          p:jpaPropertyMap-ref="jpaPropertyMap"
+          p:jpaVendorAdapter-ref="hibernateJpaAdapter">
+    </bean>
+
+
+    <bean id="hibernateJpaAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="showSql" value="true" />
+    </bean>
+
+    <jpa:repositories base-package="org.monroe.team.toolsbox.repositories" />
+
+    <bean id = "dataSource"
+          class = "org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactoryBean">
+        <property name = "databaseType" value = "H2"/>
+        <property name = "databaseName" value = "persist"/>
+        <property name = "databaseConfigurer">
+            <bean class = "org.springframework.jdbc.datasource.embedded.H2EmbeddedFileDatabaseConfigurer"/>
+        </property>
+        <property name = "databasePopulator">
+            <bean class = "org.springframework.jdbc.datasource.init.ResourceDatabasePopulator">
+            </bean>
+        </property>
+    </bean>
+
+
+    <util:map id="jpaPropertyMap">
+        <entry key="hibernate.hbm2ddl.auto" value="update"/>
+    </util:map>
+
+    <!--
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactoryBean">
+    </bean>
+ <jdbc:initialize-database data-source="dataSource" ignore-failures="DROPS">
+        <jdbc:script location="classpath:schema.sql"/>
+    </jdbc:initialize-database>
+
+
+
+    <util:map id="jpaPropertyMap">
+        <entry key="generateDdl" value="${hibernate.generate_ddl}"/>
+        <entry key="hibernate.hbm2ddl.auto" value="${hibernate.hbm2ddl.auto}"/>
+        <entry key="hibernate.dialect" value="${hibernate.dialect}"/>
+        <entry key="hibernate.default_schema" value="${hibernate.default_schema}"/>
+        <entry key="hibernate.format_sql" value="${hibernate.format_sql}"/>
+    </util:map>
+
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    -->
+
+
+</beans>
