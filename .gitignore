@@ -8,3 +8,5 @@ gen/
 log/
 logs/
 *nohup.out
+remfly-conf.json
+*.db
