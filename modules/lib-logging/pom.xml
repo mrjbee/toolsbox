@@ -15,7 +15,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Logging Library Module</name>
+    <name>Toolsbox: Logging Library Module</name>
 
     <dependencies>
 

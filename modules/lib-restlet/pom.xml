@@ -15,7 +15,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Restlet Library Module</name>
+    <name>Toolsbox: Restlet Library Module</name>
 
     <dependencies>
 

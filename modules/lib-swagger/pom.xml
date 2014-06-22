@@ -16,7 +16,7 @@
     <packaging>war</packaging>
 
 
-    <name>Swagger UI Module</name>
+    <name>Toolsbox: Swagger UI Module</name>
 
     <dependencies>
 
