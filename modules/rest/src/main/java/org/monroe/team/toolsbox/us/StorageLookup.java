@@ -5,8 +5,9 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.TreeTraverser;
 import com.google.common.io.Files;
 import org.apache.logging.log4j.Logger;
+import org.monroe.team.toolsbox.entities.FileDescription;
 import org.monroe.team.toolsbox.logging.Logs;
-import org.monroe.team.toolsbox.services.StoragePersist;
+import org.monroe.team.toolsbox.services.StorageManager;
 import org.monroe.team.toolsbox.entities.Storage;
 
 import javax.inject.Inject;
@@ -15,12 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+
 @Named
 public class StorageLookup implements StorageLookupDefinition{
 
     static Logger LOG = Logs.forFeature("Storage");
 
-    @Inject StoragePersist storagePersist;
+    @Inject
+    StorageManager storageManager;
 
     @Override
     public void perform(StorageLookupRequest request) {
@@ -39,7 +42,7 @@ public class StorageLookup implements StorageLookupDefinition{
                 File configFile = itFile;
                 try {
                     Storage storage = loadStorage(configFile);
-                    storagePersist.save(storage);
+                    storageManager.save(storage);
                     LOG.info("Found storage = {}", storage);
                 } catch (IOException e) {
                     LOG.warn("Couldn`t load store = {}: {}", configFile.getAbsolutePath());
@@ -55,7 +58,7 @@ public class StorageLookup implements StorageLookupDefinition{
         Storage.StorageType type = Storage.StorageType.valueOf(properties.getProperty("type",
                 Storage.StorageType.PERMANENT.name()));
         String label = properties.getProperty("label", "undefined");
-        return new Storage(label, configFile.getParentFile().getAbsolutePath(), type);
+        return new Storage(label,type, FileDescription.create(configFile.getParentFile(), FileDescription.Type.ROOT));
     }
 
     static boolean isScanLevelReached(File file, File root, int level) {

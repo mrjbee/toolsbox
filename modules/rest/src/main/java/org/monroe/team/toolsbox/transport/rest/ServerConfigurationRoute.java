@@ -1,42 +1,43 @@
 package org.monroe.team.toolsbox.transport.rest;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Headers;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.util.CamelContextHelper;
 import org.monroe.team.toolsbox.entities.Storage;
-import org.monroe.team.toolsbox.repositories.StorageRepository;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
+import org.monroe.team.toolsbox.transport.common.RestRouteBuilder;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;
+import org.monroe.team.toolsbox.us.common.Exceptions;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.List;
 
 
 @Named
-public class ServerConfigurationRoute extends RouteBuilder {
+public class ServerConfigurationRoute extends RestRouteBuilder {
 
     @Inject ConfigurationManager configurationManager;
     @Inject StorageLookupDefinition storageLookup;
-    @Inject StorageRepository storageRepository;
 
     @Override
-    public void configure() throws Exception {
-        from("restlet:/test/{testName}").process(new Processor() {
-            @Override
-            public void process(Exchange exchange) throws Exception {
-                List<Storage> storageList = storageRepository.findAll();
-                System.out.println(storageList);
-                String testPath = exchange.getIn().getHeader("testName", String.class);
-                Storage storage = new Storage(testPath,testPath, Storage.StorageType.PORTABLE);
-                storageRepository.save(storage);
-            }
-        });
+    public void doConfigure() {
 
         from("restlet:/configuration?restletMethod=post").unmarshal().json(JsonLibrary.Gson, ConfigurationManager.Configuration.class)
             .bean(configurationManager, "setConfig");
+
+        from("restlet:/configuration")
+                .bean(configurationManager, "getConfig")
+                .choice()
+                    .when(body().isNull())
+                    .throwException(new Exceptions.IdNotFoundException("[none]"))
+                    .end()
+                .marshal()
+                    .json(JsonLibrary.Gson)
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200));
 
         from("timer://storageLookupLoop?fixedRate=true&period=60s")
                 .routeId("StorageLookupLoop")
