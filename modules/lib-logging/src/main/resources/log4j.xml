@@ -51,6 +51,15 @@
         <logger name="com" level="warn" additivity="true">
             <appender-ref ref="FRAMEWORKS"/>
         </logger>
+
+<!--
+        <logger name="org.hibernate.transaction" level="debug" additivity="true">
+            <appender-ref ref="FRAMEWORKS"/>
+        </logger>
+        <logger name="org.springframework.transaction" level="debug" additivity="true">
+            <appender-ref ref="FRAMEWORKS"/>
+        </logger>
+-->
         <Root level="WARN">
             <AppenderRef ref="Console"/>
         </Root>

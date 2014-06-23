@@ -5,12 +5,14 @@
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
                            http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
-                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
 
@@ -27,7 +29,7 @@
         <property name="showSql" value="true" />
     </bean>
 
-    <jpa:repositories base-package="org.monroe.team.toolsbox.repositories" />
+    <jpa:repositories base-package="org.monroe.team.toolsbox.repositories" transaction-manager-ref="txManager"/>
 
     <bean id = "dataSource"
           class = "org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactoryBean">
@@ -47,6 +49,17 @@
         <entry key="hibernate.hbm2ddl.auto" value="update"/>
     </util:map>
 
+    <tx:annotation-driven transaction-manager="txManager" />
+
+    <bean id="PROPAGATION_REQUIRED" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
+        <property name="transactionManager" ref="txManager"/>
+    </bean>
+
+    <bean id="PROPAGATION_REQUIRES_NEW" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
+        <property name="transactionManager" ref="txManager"/>
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW"/>
+    </bean>
+
     <!--
     <bean id="dataSource" class="org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactoryBean">
     </bean>
@@ -64,7 +77,6 @@
         <entry key="hibernate.format_sql" value="${hibernate.format_sql}"/>
     </util:map>
 
-    <tx:annotation-driven transaction-manager="transactionManager" />
     -->
 
 
