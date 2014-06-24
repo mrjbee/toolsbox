@@ -3,21 +3,24 @@ var ModelPrototype = {
     _presenter:null,
 
     //Production URl
-    _serverUrl : "http://194.29.62.160:8880/remote-control-api/rest",
+    //_serverUrl : "http://194.29.62.160:8880/remote-control-api/rest",
 
     //Test URl
-    //_serverUrl : "http://192.168.0.201:8080/remote-config-api/rest",
+    _serverUrl : "http://192.168.0.201:8080/remfly-api/rest",
 
     _username : "",
     _password : "",
 
+
+    currentFiles:null,
+
     //Server statistic fields
+    //@Deprecated
     awakeMinutes : 0,
     lastStatus : "NaN",
     lastDate : "NaN",
     offlineTillDate : "NaN",
 
-    _settings:null,
 
     constructor:function _constructor(){
         $.ajaxSetup({
@@ -26,33 +29,7 @@ var ModelPrototype = {
                 request.setRequestHeader("Authorization", "Basic " + btoa(this._username + ":" + this._password));
             }.bind(this)
         });
-        var model = this;
-        _settings = {
-            awakeMinutes:{
-                name:"sleepminutes",
-                applyValue: function (resultText) {
-                    model.awakeMinutes = parseInt(resultText);
-                }
-            },
-            lastStatus:{
-                name:"status",
-                applyValue: function (resultText) {
-                    model.lastStatus = resultText;
-                }
-            },
-            lastDate:{
-                name:"lastDate",
-                applyValue: function (resultText) {
-                    model.lastDate = resultText;
-                }
-            },
-            offlineTillDate:{
-                name:"offlineTillDate",
-                applyValue: function (resultText) {
-                    model.offlineTillDate = resultText;
-                }
-            }
-        }
+
     },
 
     loginUser : function (loginRequestModel, whenSuccess, whenFails, whenError) {
@@ -72,53 +49,45 @@ var ModelPrototype = {
         }.bind(this))
     },
 
-    updateDetails : function (onSuccess,onFailure) {
-
-        this._fetchSettings([_settings.lastStatus, _settings.awakeMinutes,_settings.lastDate, _settings.offlineTillDate],
-            onSuccess, onFailure);
-
+    initialize : function (onSuccess, onFailure) {
+        this._initFiles(onSuccess, onFailure)
     },
 
-    _fetchSettings:function (settings, onSuccess, onFails){
-        var functionToExecute = null;
-        var model = this;
-        for (var index = 0; index < settings.length; ++index) {
-            var setting = settings[index];
-            var nextFunctionToExecute = function(){
-                model._fetchSetting(nextFunctionToExecute.setting.name,function(successText){
-                    console.log("Fetching "+nextFunctionToExecute.setting.name + ' by using:'+ nextFunctionToExecute.a_name);
-                    nextFunctionToExecute.setting.applyValue(successText);
-                    var nextFunc = nextFunctionToExecute.next;
-                    if (nextFunc!=null){
-                        nextFunctionToExecute = nextFunc;
-                    }
-                    //call next... or prev
-                    if (nextFunc != null){
-                        nextFunc()
-                    } else {
-                        onSuccess()
-                    }
-                },onFails)
-            };
-            nextFunctionToExecute.a_name = "fetchCallback_"+setting.name;
-            nextFunctionToExecute.next = functionToExecute;
-            nextFunctionToExecute.setting = setting;
-            functionToExecute = nextFunctionToExecute;
-        }
-        functionToExecute()
-    },
-
-    _fetchSetting: function (settingName, onSuccess, onFails){
+    updateFilesWithRoot : function (rootFileId, onSuccess, onFailure) {
         this._doRequest({
             type: "GET",
-            url: this._serverUrl + '/server/moon/'+settingName
+            url: this._serverUrl + '/file/'+rootFileId+"/children"
         }, function (response) {
             if (response.statusCode == 200) {
-                onSuccess(response.resultText, response);
+                this.currentFiles = $.parseJSON(response.resultText);
+                onSuccess()
             } else {
-                onFails(response.statusCode, response);
+                onFailure(response.statusCode);
             }
-        })
+        }.bind(this))
+    },
+
+    _initFiles : function (onSuccess, onFailure) {
+        this._doRequest({
+            type: "GET",
+            url: this._serverUrl + '/storages'
+        }, function (response) {
+            if (response.statusCode == 200) {
+                var storages = $.parseJSON(response.resultText);
+                var storagesAsFiles = []
+                for (var index = 0; index < storages.length; ++index) {
+                    storagesAsFiles.push({
+                       id:storages[index].refFileId,
+                       name:storages[index].label,
+                       folder:true
+                    })
+                }
+                this.currentFiles = storagesAsFiles;
+                onSuccess()
+            } else {
+                onFailure(response.statusCode);
+            }
+        }.bind(this))
     },
 
     saveAwakeSeconds : function (value, whenSuccess, whenFails) {

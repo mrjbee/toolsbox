@@ -1,0 +1,1 @@
+curl -H "Content-Type: application/json" --data @remfly-conf.json http://localhost:8080/remfly-api/rest/configuration -u rest:rest

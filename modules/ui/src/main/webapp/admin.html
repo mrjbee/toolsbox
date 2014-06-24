@@ -27,62 +27,23 @@
         </form>
 </div>
 
-
+    <div data-role="header" class="ui-header">
+        <h3>RemFLy. Remote Manager</h3>
+    </div>
     <div role="main" class="ui-content">
         <div class="grid-content ui-grid">
             <div class="ui-block-a ui-body ui-body-a ui-corner-all">
-                <h2>Remote configuration</h2>
-                <hr/>
-
-                <h3>Server Statistic</h3>
+                <h3>Storages statistic</h3>
                 <div class="panel">
-                    <div class="grid-value ui-grid">
-                        <div class="ui-block-c">
-                            Last online date      
-                        </div>
-                        <div class="ui-block-d text-value" id="last-online-date-label">
-                            NaN     
-                        </div>
-                    </div>
-                    <br/>
-                    <div class="grid-value ui-grid">
-                        <div class="ui-block-c">
-                            Status      
-                        </div>
-                        <div class="ui-block-d text-value" id="status-label">
-                            NaN     
-                        </div>
-                    </div>
-                    <br/>
-                    <div class="grid-value ui-grid">
-                        <div class="ui-block-c">
-                            Awake date      
-                        </div>
-                        <div class="ui-block-d text-value" id="offline-till-date-label">
-                            NaN     
-                        </div>
-                    </div>
-                    <br/>
-                    <button class="ui-btn ui-mini" id="refresh-btn">Refresh</button>
+                    <b>Todo: Space statistic</b>
                 </div>
-                <h3>Server Settings</h3>
-                <div class="panel">
-                    <b>Next time sleep timer</b>
-                    <fieldset class="grid-value ui-grid">
-                        <div class="ui-block-c">
-                                <select name="flip" id="awake-flip" data-role="flipswitch" data-theme="a">
-                                    <option value="off">Off</option>
-                                    <option value="on">On</option>
-                                </select>
-                        </div>
-                        <div class="ui-block-d text-value">
-                           <p id="awake-minutes-label" >NaN</p>                                                
-                        </div>
-                    </fieldset>
-                    <input name="slider" id="awake-second-slider" data-highlight="true" min="60" max="360" value="60" type="range"/>
-                </div>    
             </div>        
-            <div class="ui-block-b"></div>
+            <div class="ui-block-b ui-body-a ui-corner-all">
+                <h3>File Browser</h3>
+                <ul data-role="listview" data-inset="true" id="file-browser-list">
+                    <!-- <li><a href="#">Acura</a></li> -->
+                </ul>
+            </div>
         </div>
     </div>
     <div id="lockPanel"/>

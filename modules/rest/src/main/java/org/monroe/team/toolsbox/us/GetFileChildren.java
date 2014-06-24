@@ -67,7 +67,7 @@ public class GetFileChildren implements GetFileChildrenDefinition{
         }));
 
         if (!FileDescription.Type.ROOT.equals(parentFileDescription.type)){
-            list.add(new FileResponse(parentFile.getParentFile().getAbsoluteFile().hashCode(),
+            list.add(new FileResponse(parentFile.getParentFile().getAbsolutePath().hashCode(),
                     "..",
                     true));
         }

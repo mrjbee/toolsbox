@@ -1,6 +1,8 @@
-.grid-content .ui-block-a {
-    width: 40%;
+.grid-content .ui-block-a, .ui-block-b {
+    width: 45%;
+    margin: 2% 2% 2% 2%;
 }
+
 
 @media all and (max-width: 1000px) {
 	.grid-content .ui-block-a,

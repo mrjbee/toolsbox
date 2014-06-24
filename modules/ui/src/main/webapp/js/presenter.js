@@ -12,29 +12,6 @@ var PresenterPrototype = {
         this._view.loginBtn.click(function(){
             this.initiateLogin();
         }.bind(this));
-
-        this._view.refreshBtn.click(function(){
-            this._initiateModelUpdate();
-        }.bind(this));
-
-        this._view.awakeMinutesSlider.parent().change(function() {
-            var minutesValue = this._view.awakeMinutesSlider.val();
-            this.updateAwakeSecondsUI(minutesValue);
-        }.bind(this));
-        this._view.awakeMinutesSlider.slider({
-            stop: function( event, ui ) {
-                var minutesValue = this._view.awakeMinutesSlider.val();
-                this._saveAwakeMinutesSetting(minutesValue);
-            }.bind(this)
-        });
-        this._view.awakeSleep.bind( "change", function(event, ui) {
-            if (this._view.awakeSleep.val()=="on"){
-                minutesValue = this._view.awakeMinutesSlider.val();
-                this._saveAwakeMinutesSetting(minutesValue);
-            } else {
-                this._saveAwakeMinutesSetting(0);
-            }
-        }.bind(this));
     },
 
     updateAwakeSecondsUI : function(minutes){
@@ -122,14 +99,13 @@ var PresenterPrototype = {
 
     _initiateModelUpdate : function() {
         this._lockUI();
-        this._model.updateDetails(
+        this._model.initialize(
             function(){
+                this._updateFileBrowser();
                 this._unlockUI();
-                this._updatedStatistic()
             }.bind(this),
             function(statusCode){
-                this._view.lockPanel.fadeOut();
-                $.mobile.loading( "hide");
+                this._unlockUI();
                 this._askForReLogin(statusCode)
             }.bind(this)
         );
@@ -142,6 +118,41 @@ var PresenterPrototype = {
         }
         this._view.authDialog.popup("open");
         this._view.infolabel.slideDown().delay(1000).fadeOut(400);
+    },
+
+    _updateFileBrowser: function(){
+        this._view.fileBrowserList.empty();
+        var liEl,aEl;
+        for (var index = 0; index < this._model.currentFiles.length; ++index) {
+            liEl = $(document.createElement("li"));
+            aEl = $(document.createElement("a"));
+            liEl.append(aEl);
+            aEl.append(this._model.currentFiles[index].name);
+            if (this._model.currentFiles[index].folder){
+                aEl.click({
+                    fileId:this._model.currentFiles[index].id
+                },function(event){
+                    this._lockUI(true);
+                    this._model.updateFilesWithRoot(
+                        event.data.fileId,
+                        function(){
+                            this._updateFileBrowser();
+                            this._unlockUI();
+                        }.bind(this),
+                        function(statusCode){
+                            this._unlockUI();
+                            this._askForReLogin(statusCode)
+                        }.bind(this)
+                    )
+                }.bind(this));
+            } else {
+                aEl.click(function(event){
+                    alert("I`m just a file");
+                }.bind(this));
+            }
+            this._view.fileBrowserList.append(liEl);
+        }
+        this._view.fileBrowserList.listview( "refresh" );
     },
 
     _updatedStatistic : function(){

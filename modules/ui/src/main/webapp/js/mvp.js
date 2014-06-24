@@ -9,14 +9,9 @@ function initMVP(){
         passInput:$("#pass-input"),
         authDialog:$("#loginDialog"),
         infolabel:$("#info-label"),
-        awakeSleep:$("#awake-flip"),
-        awakeMinutesLabel:$("#awake-minutes-label"),
-        awakeMinutesSlider:$("#awake-second-slider"),
-        lastOnlineDateLabel:$("#last-online-date-label"),
-        statusLabel:$("#status-label"),
-        offlineTillDateLabel:$("#offline-till-date-label"),
         lockPanel: $("#lockPanel"),
-        refreshBtn:$("#refresh-btn")
+        fileBrowserList:$("#file-browser-list")
+
     });
     //TODO: disbale form submission. Place it in presenter
     $("#login-form").submit(function() {
