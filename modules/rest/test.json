@@ -1,0 +1,9 @@
+{
+  "storageLookupConfigurations": [
+    {
+      "filePath": "/mnt",
+      "scanLevel": 3
+    }
+  ],
+"type":"not-copy"
+}
