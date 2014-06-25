@@ -10,8 +10,9 @@ function initMVP(){
         authDialog:$("#loginDialog"),
         infolabel:$("#info-label"),
         lockPanel: $("#lockPanel"),
-        fileBrowserList:$("#file-browser-list")
-
+        fileBrowserList:$("#file-browser-list"),
+        taskChoosePopup:$("#file-task-popup"),
+        copyTaskItem:$("#copy-task-item")
     });
     //TODO: disbale form submission. Place it in presenter
     $("#login-form").submit(function() {

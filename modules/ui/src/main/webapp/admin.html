@@ -2,11 +2,12 @@
 <html>
 <head>
     <title>Remote Config UI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="themes/default.min.css" />
     <link rel="stylesheet" href="themes/jquery.mobile.icons.min.css" />
     <link rel="stylesheet" href="themes/jquery.mobile.structure-1.4.2.min.css" />
     <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script src="js/file-browser.js"></script>
     <script src="js/model.js"></script>
     <script src="js/presenter.js"></script>
     <script src="js/mvp.js"></script>
@@ -14,18 +15,25 @@
     <script src="js/jquery.mobile-1.4.2.min.js"></script>
 </head>
 <body>
-<div class="top-content" data-role="page">
+<div class="top-cover">
+<div class="top-page" data-role="page">
 
-<div data-role="popup" id="loginDialog" data-theme="b" data-overlay-theme="b" class="ui-corner-all" data-dismissible="false" data-history="false">
+    <div data-role="popup" id="loginDialog" data-theme="b" data-overlay-theme="b" class="ui-corner-all" data-dismissible="false" data-history="false">
+            <form id="login-form" data-ajax="false"  style="padding:10px 20px;">
+                    <h3>Please sign in</h3>
+                    <div id="info-label" class="warning"></div>
+                    <input name="user" id="user-input" value="" placeholder="username" data-theme="a" type="text">
+                    <input name="pass" id="pass-input" value="" placeholder="password" data-theme="a" type="password">
+                    <button type="submit" id="login-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Sign in</button>
+            </form>
+    </div>
 
-        <form id="login-form" data-ajax="false"  style="padding:10px 20px;">
-                <h3>Please sign in</h3>
-                <div id="info-label" class="warning"></div>
-                <input name="user" id="user-input" value="" placeholder="username" data-theme="a" type="text">
-                <input name="pass" id="pass-input" value="" placeholder="password" data-theme="a" type="password">
-                <button type="submit" id="login-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Sign in</button>
-        </form>
-</div>
+    <div data-role="popup" id="file-task-popup" data-theme="b" data-history="false">
+        <ul data-role="listview" data-inset="true" style="min-width:210px;">
+            <li data-role="list-divider">Choose an action</li>
+            <li><a id="copy-task-item" href="#action-setting-panel">Copy To ...</a></li>
+        </ul>
+    </div>
 
     <div data-role="header" class="ui-header">
         <h3>RemFLy. Remote Manager</h3>
@@ -34,19 +42,20 @@
         <div class="grid-content ui-grid">
             <div class="ui-block-a ui-body ui-body-a ui-corner-all">
                 <h3>Storages statistic</h3>
-                <div class="panel">
+                <div class="transperent-panel">
                     <b>Todo: Space statistic</b>
                 </div>
             </div>        
             <div class="ui-block-b ui-body-a ui-corner-all">
                 <h3>File Browser</h3>
                 <ul data-role="listview" data-inset="true" id="file-browser-list">
-                    <!-- <li><a href="#">Acura</a></li> -->
+                    <li data-role="list-divider">Storages</li>
                 </ul>
             </div>
         </div>
     </div>
     <div id="lockPanel"/>
+</div>
 </div>
 <script type="text/javascript">
 $(document).ready(initMVP);

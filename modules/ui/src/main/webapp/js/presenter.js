@@ -1,9 +1,9 @@
 
 var PresenterPrototype = {
 
-    _lastMinutes: -1,
     _model: null,
     _view: null,
+    _rootBrowserView: null,
 
     constructor:function _constructor(model,view){
         this._model = model;
@@ -12,48 +12,76 @@ var PresenterPrototype = {
         this._view.loginBtn.click(function(){
             this.initiateLogin();
         }.bind(this));
-    },
+        this._view.copyTaskItem.click(function(){
+            this._closeActionPopup();
+            this._view.fileBrowserList.slideUp().delay(2000).slideDown();
+        }.bind(this));
 
-    updateAwakeSecondsUI : function(minutes){
+        this._rootBrowserView = Object.create(FileBrowserPrototype);
+        var me = this;
+        this._rootBrowserView.constructor({
+            requestLoadingRendering : function () {me._lockUI(false)},
+            cancelLoadingRendering:function () {me._unlockUI()},
+            rootView:function () {return me._view.fileBrowserList},
 
-        if (this._lastMinutes == minutes) return;
-
-        this._lastMinutes = minutes;
-
-        if(minutes == 0){
-            this._view.awakeMinutesLabel.text("stay up");
-            this._view.awakeMinutesSlider.slider("disable");
-            this._view.awakeSleep.val("off");
-            this._view.awakeSleep.flipswitch( "refresh" );
-        } else {
-            hr = Math.floor(minutes/60);
-            mins= minutes % 60;
-            if (hr == 0){
-                this._view.awakeMinutesLabel.text(mins+"min");
-            } else {
-                this._view.awakeMinutesLabel.text(hr+" hr "+mins+"min");
+            renderHeader:function (selectedFiles) {
+                var caption = "Available Storages"
+                if (selectedFiles.length != 0){
+                    caption = "";
+                    for (var i=0;i<selectedFiles.length;i++){
+                        caption=caption+"/"+selectedFiles[i].name;
+                    }
+                }
+                var liEl;
+                liEl = $(document.createElement("li"));
+                liEl.attr("data-role","list-divider");
+                liEl.css("direction","rtl");
+                liEl.append(caption);
+                return liEl;
+            },
+            renderFolder:function (itFolder, doOnTraverse){
+                var liEl,aEl;
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                liEl.append(aEl);
+                aEl.append(itFolder.name);
+                aEl.click({
+                    file:itFolder,
+                    browserCallBack:doOnTraverse
+                },function(event){
+                    event.data.browserCallBack(event.data.file);
+                })
+                return liEl;
+            },
+            renderFile : function (itFile) {
+                var liEl,aEl;
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                liEl.append(aEl);
+                aEl.append(itFile.name);
+                aEl.attr("href","#file-task-popup");
+                aEl.attr("data-rel","popup");
+                aEl.attr("data-transition","pop");
+                liEl.attr("data-icon","gear");
+                aEl.click({
+                        file:itFile
+                    },function(event){
+                        me._model.selectedFile = event.data.file;
+                    }.bind(me));
+                return liEl;
             }
-            this._view.awakeMinutesSlider.slider("enable");
-            this._view.awakeMinutesSlider.val(minutes);
-            this._view.awakeMinutesSlider.slider("refresh");
-            this._view.awakeSleep.val("on");
-            this._view.awakeSleep.flipswitch( "refresh" );
-        }
-    },
-
-
-    _saveAwakeMinutesSetting: function (minutesValue) {
-        this._lockUI(true);
-        this._model.saveAwakeSeconds(minutesValue,
-            function(minutes){
-                this._unlockUI();
-                this.updateAwakeSecondsUI(minutes);
-            }.bind(this),
-            function(statusCode){
-                this._unlockUI();
-                this._askForReLogin(statusCode);
-            }.bind(this)
-        );
+        },{
+            getRoots : function (doOnDone) {
+                return me._model.requestStoragesAsFiles(doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            },
+            getSubFiles : function (file, doOnDone) {
+                return me._model.requestFiles(file, doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            }
+          })
     },
 
     initial : function(){
@@ -98,17 +126,7 @@ var PresenterPrototype = {
     },
 
     _initiateModelUpdate : function() {
-        this._lockUI();
-        this._model.initialize(
-            function(){
-                this._updateFileBrowser();
-                this._unlockUI();
-            }.bind(this),
-            function(statusCode){
-                this._unlockUI();
-                this._askForReLogin(statusCode)
-            }.bind(this)
-        );
+        this._rootBrowserView.moveToRoot();
     },
 
     _askForReLogin : function(statusCode){
@@ -120,45 +138,9 @@ var PresenterPrototype = {
         this._view.infolabel.slideDown().delay(1000).fadeOut(400);
     },
 
-    _updateFileBrowser: function(){
-        this._view.fileBrowserList.empty();
-        var liEl,aEl;
-        for (var index = 0; index < this._model.currentFiles.length; ++index) {
-            liEl = $(document.createElement("li"));
-            aEl = $(document.createElement("a"));
-            liEl.append(aEl);
-            aEl.append(this._model.currentFiles[index].name);
-            if (this._model.currentFiles[index].folder){
-                aEl.click({
-                    fileId:this._model.currentFiles[index].id
-                },function(event){
-                    this._lockUI(true);
-                    this._model.updateFilesWithRoot(
-                        event.data.fileId,
-                        function(){
-                            this._updateFileBrowser();
-                            this._unlockUI();
-                        }.bind(this),
-                        function(statusCode){
-                            this._unlockUI();
-                            this._askForReLogin(statusCode)
-                        }.bind(this)
-                    )
-                }.bind(this));
-            } else {
-                aEl.click(function(event){
-                    alert("I`m just a file");
-                }.bind(this));
-            }
-            this._view.fileBrowserList.append(liEl);
-        }
-        this._view.fileBrowserList.listview( "refresh" );
-    },
 
-    _updatedStatistic : function(){
-        this.updateAwakeSecondsUI(this._model.awakeMinutes)
-        this._view.statusLabel.text(this._model.lastStatus)
-        this._view.lastOnlineDateLabel.text(this._model.lastDate)
-        this._view.offlineTillDateLabel.text(this._model.offlineTillDate)
+
+    _closeActionPopup : function(){
+        this._view.taskChoosePopup.popup("close");
     }
 }

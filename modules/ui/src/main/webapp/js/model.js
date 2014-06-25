@@ -11,9 +11,6 @@ var ModelPrototype = {
     _username : "",
     _password : "",
 
-
-    currentFiles:null,
-
     //Server statistic fields
     //@Deprecated
     awakeMinutes : 0,
@@ -50,24 +47,22 @@ var ModelPrototype = {
     },
 
     initialize : function (onSuccess, onFailure) {
-        this._initFiles(onSuccess, onFailure)
     },
 
-    updateFilesWithRoot : function (rootFileId, onSuccess, onFailure) {
+    requestFiles : function (rootFile, onSuccess, onFailure) {
         this._doRequest({
             type: "GET",
-            url: this._serverUrl + '/file/'+rootFileId+"/children"
+            url: this._serverUrl + '/file/'+rootFile.id+"/children"
         }, function (response) {
             if (response.statusCode == 200) {
-                this.currentFiles = $.parseJSON(response.resultText);
-                onSuccess()
+                onSuccess($.parseJSON(response.resultText))
             } else {
                 onFailure(response.statusCode);
             }
         }.bind(this))
     },
 
-    _initFiles : function (onSuccess, onFailure) {
+    requestStoragesAsFiles : function (onSuccess, onFailure) {
         this._doRequest({
             type: "GET",
             url: this._serverUrl + '/storages'
@@ -77,30 +72,14 @@ var ModelPrototype = {
                 var storagesAsFiles = []
                 for (var index = 0; index < storages.length; ++index) {
                     storagesAsFiles.push({
-                       id:storages[index].refFileId,
-                       name:storages[index].label,
-                       folder:true
+                        id:storages[index].refFileId,
+                        name:storages[index].label,
+                        folder:true
                     })
                 }
-                this.currentFiles = storagesAsFiles;
-                onSuccess()
+                onSuccess(storagesAsFiles);
             } else {
                 onFailure(response.statusCode);
-            }
-        }.bind(this))
-    },
-
-    saveAwakeSeconds : function (value, whenSuccess, whenFails) {
-        this._doRequest({
-            type: "POST",
-            url: this._serverUrl + '/server/moon/sleepminutes',
-            data: "" + value
-        }, function (response) {
-            if (response.statusCode == 200) {
-                this.awakeMinutes = parseInt(response.resultText);
-                whenSuccess(this.awakeMinutes)
-            } else {
-                whenFails(response.statusCode);
             }
         }.bind(this))
     },
