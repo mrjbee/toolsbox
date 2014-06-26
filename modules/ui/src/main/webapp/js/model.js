@@ -83,6 +83,20 @@ var ModelPrototype = {
         }.bind(this))
     },
 
+    addTask: function(task, whenSuccess, whenFails){
+        this._doRequest({
+            type: "POST",
+            url: this._serverUrl + '/task',
+            data: JSON.stringify(task)
+        }, function (response) {
+            if (response.statusCode == 200) {
+                whenSuccess()
+            } else {
+                whenFails(response.statusCode);
+            }
+        }.bind(this))
+    },
+
     _doRequest: function __doRequest(ajaxDetails, callback) {
         $.ajax(ajaxDetails).always(function (dataorJQXHR, textStatus, jqXHRorErrorThrown) {
             if (textStatus == "success") {

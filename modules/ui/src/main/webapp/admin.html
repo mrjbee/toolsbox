@@ -38,7 +38,10 @@
             <ul data-role="listview" data-inset="true" id="copy-browser-list">
             </ul>
             <a href="#" class="ui-btn ui-mini" id="copy-dialog-storage-btn">Storage List</a>
-            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Copy</a>
+            <input name="copyDialogRemoveCheckBox" id="copyDialogRemoveCheckBox" data-mini="true" type="checkbox">
+            <label for="copyDialogRemoveCheckBox">Are you want to remove source file after copy?</label>
+            <div id="copy-dialog-info-label" class="warning" style="display: none"></div>
+            <a href="#" id="copy-dialog-copy-btn" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-transition="flow">Copy</a>
             <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
         </div>
     </div>

@@ -45,6 +45,13 @@ var FileBrowserPrototype = {
         }.bind(this));
     },
 
+    getOpenFolder: function (){
+        if (this._selectedFiles.length == 0){
+            return null;
+        }
+        return this._selectedFiles[this._selectedFiles.length -1];
+    },
+
     getSelectedPath: function () {
         var caption = ""
         if (this._selectedFiles.length != 0){

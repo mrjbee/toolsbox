@@ -18,6 +18,28 @@ var PresenterPrototype = {
             this._copyBrowserView.moveToRoot();
         }.bind(this));
 
+        this._view.copyDialogCopyBtn.click(function(){
+            if (this._copyBrowserView.getOpenFolder() == null) {
+                this._view.copyDialogInfoLabel.text("Please select destination folder.")
+                this._view.copyDialogInfoLabel.slideDown().delay(1000).fadeOut(400);
+                return;
+            }
+            this._view.copyDialog.popup("close")
+            this._lockUI(true);
+            this._model.addTask({
+                type:"copy",
+                srcFile:this._model.selectedFile.id,
+                dstFile:this._copyBrowserView.getOpenFolder().id,
+                removeRequired: this._view.copyDialogRemoveCheckBox.attr("checked")
+            }, function(){
+                this._unlockUI();
+            }.bind(this), function(status){
+                this._unlockUI();
+                //TODO: implement error handling
+                alert("Sorry not implemented. Error = "+status);
+            }.bind(this));
+        }.bind(this));
+
         this._view.copyTaskItem.click(function(){
             this._closeActionPopup();
             this._lockUI(false);
@@ -25,10 +47,12 @@ var PresenterPrototype = {
                 this._copyBrowserView.moveToRoot(function(){
                     var path = this._rootBrowserView.getSelectedPath()+"/"+this._model.selectedFile.name;
                     this._view.copyDialogSrcFileName.text(path);
+                    this._view.copyDialogInfoLabel.text("");
+                    this._view.copyDialogRemoveCheckBox.attr("checked",false).checkboxradio("refresh");
                     this._view.copyDialog.popup("open");
                     this._unlockUI();
                 }.bind(this));
-            }.bind(this), 1 * 1000);
+            }.bind(this), 1000);
         }.bind(this));
         this._rootBrowserView = Object.create(FileBrowserPrototype);
         var me = this;

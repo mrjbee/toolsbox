@@ -16,7 +16,10 @@ function initMVP(){
         copyDialog:$("#copyDialog"),
         copyDialogSrcFileName:$("#srcFileName"),
         copyDialogBrowser:$("#copy-browser-list"),
-        copyDialogStorageListBtn:$("#copy-dialog-storage-btn")
+        copyDialogStorageListBtn:$("#copy-dialog-storage-btn"),
+        copyDialogRemoveCheckBox:$("#copyDialogRemoveCheckBox"),
+        copyDialogInfoLabel:$("#copy-dialog-info-label"),
+        copyDialogCopyBtn:$("#copy-dialog-copy-btn")
     });
 
     //TODO: disbale form submission. Place it in presenter
