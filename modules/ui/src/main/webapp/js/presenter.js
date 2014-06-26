@@ -4,6 +4,7 @@ var PresenterPrototype = {
     _model: null,
     _view: null,
     _rootBrowserView: null,
+    _copyBrowserView: null,
 
     constructor:function _constructor(model,view){
         this._model = model;
@@ -12,18 +13,29 @@ var PresenterPrototype = {
         this._view.loginBtn.click(function(){
             this.initiateLogin();
         }.bind(this));
-        this._view.copyTaskItem.click(function(){
-            this._closeActionPopup();
-            this._view.fileBrowserList.slideUp().delay(2000).slideDown();
+
+        this._view.copyDialogStorageListBtn.click(function(){
+            this._copyBrowserView.moveToRoot();
         }.bind(this));
 
+        this._view.copyTaskItem.click(function(){
+            this._closeActionPopup();
+            this._lockUI(false);
+            setTimeout(function(){
+                this._copyBrowserView.moveToRoot(function(){
+                    var path = this._rootBrowserView.getSelectedPath()+"/"+this._model.selectedFile.name;
+                    this._view.copyDialogSrcFileName.text(path);
+                    this._view.copyDialog.popup("open");
+                    this._unlockUI();
+                }.bind(this));
+            }.bind(this), 1 * 1000);
+        }.bind(this));
         this._rootBrowserView = Object.create(FileBrowserPrototype);
         var me = this;
         this._rootBrowserView.constructor({
-            requestLoadingRendering : function () {me._lockUI(false)},
+            requestLoadingRendering : function () {me._lockUI(true)},
             cancelLoadingRendering:function () {me._unlockUI()},
             rootView:function () {return me._view.fileBrowserList},
-
             renderHeader:function (selectedFiles) {
                 var caption = "Available Storages"
                 if (selectedFiles.length != 0){
@@ -82,6 +94,57 @@ var PresenterPrototype = {
                 })
             }
           })
+
+        this._copyBrowserView = Object.create(FileBrowserPrototype);
+        this._copyBrowserView.constructor({
+            requestLoadingRendering : function () {me._lockUI(true)},
+            cancelLoadingRendering:function () {me._unlockUI()},
+            rootView:function () {return me._view.copyDialogBrowser},
+
+            renderHeader:function (selectedFiles) {
+                var caption = "Available Storages"
+                if (selectedFiles.length != 0){
+                    caption = "";
+                    for (var i=0;i<selectedFiles.length;i++){
+                        caption=caption+"/"+selectedFiles[i].name;
+                    }
+                }
+                var liEl;
+                liEl = $(document.createElement("li"));
+                liEl.attr("data-role","list-divider");
+                liEl.css("direction","rtl");
+                liEl.append(caption);
+                return liEl;
+            },
+            renderFolder:function (itFolder, doOnTraverse){
+                var liEl,aEl;
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                liEl.append(aEl);
+                aEl.append(itFolder.name);
+                aEl.click({
+                    file:itFolder,
+                    browserCallBack:doOnTraverse
+                },function(event){
+                    event.data.browserCallBack(event.data.file);
+                })
+                return liEl;
+            },
+            renderFile : function (itFile) {
+                return null;
+            }
+        },{
+            getRoots : function (doOnDone) {
+                return me._model.requestStoragesAsFiles(doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            },
+            getSubFiles : function (file, doOnDone) {
+                return me._model.requestFiles(file, doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            }
+        })
     },
 
     initial : function(){

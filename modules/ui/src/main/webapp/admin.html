@@ -28,10 +28,26 @@
             </form>
     </div>
 
+    <div data-history="false" data-role="popup" id="copyDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:98%;">
+        <div data-role="header" data-theme="a">
+            <h1>Copy File</h1>
+        </div>
+        <div role="main" class="ui-content">
+            <p>You are going to copy file <b id="srcFileName">bla/bla/lalal.com</b></p>
+            <p>Please select destination folder</p>
+            <ul data-role="listview" data-inset="true" id="copy-browser-list">
+            </ul>
+            <a href="#" class="ui-btn ui-mini" id="copy-dialog-storage-btn">Storage List</a>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Copy</a>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+        </div>
+    </div>
+
+
     <div data-role="popup" id="file-task-popup" data-theme="b" data-history="false">
         <ul data-role="listview" data-inset="true" style="min-width:210px;">
             <li data-role="list-divider">Choose an action</li>
-            <li><a id="copy-task-item" href="#action-setting-panel">Copy To ...</a></li>
+            <li><a id="copy-task-item" href="#">Copy ...</a></li>
         </ul>
     </div>
 

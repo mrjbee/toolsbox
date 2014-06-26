@@ -12,8 +12,13 @@ function initMVP(){
         lockPanel: $("#lockPanel"),
         fileBrowserList:$("#file-browser-list"),
         taskChoosePopup:$("#file-task-popup"),
-        copyTaskItem:$("#copy-task-item")
+        copyTaskItem:$("#copy-task-item"),
+        copyDialog:$("#copyDialog"),
+        copyDialogSrcFileName:$("#srcFileName"),
+        copyDialogBrowser:$("#copy-browser-list"),
+        copyDialogStorageListBtn:$("#copy-dialog-storage-btn")
     });
+
     //TODO: disbale form submission. Place it in presenter
     $("#login-form").submit(function() {
         return false;

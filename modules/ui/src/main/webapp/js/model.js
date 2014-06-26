@@ -18,7 +18,6 @@ var ModelPrototype = {
     lastDate : "NaN",
     offlineTillDate : "NaN",
 
-
     constructor:function _constructor(){
         $.ajaxSetup({
             beforeSend: function (request) {

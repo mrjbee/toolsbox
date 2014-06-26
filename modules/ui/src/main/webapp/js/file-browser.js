@@ -45,6 +45,16 @@ var FileBrowserPrototype = {
         }.bind(this));
     },
 
+    getSelectedPath: function () {
+        var caption = ""
+        if (this._selectedFiles.length != 0){
+            for (var i=0;i<this._selectedFiles.length;i++){
+                caption=caption+"/"+this._selectedFiles[i].name;
+            }
+        }
+        return caption;
+    },
+
     _updateUI:function(files){
         this._uiDelegate.rootView().empty();
         var header = this._uiDelegate.renderHeader(this._selectedFiles);
