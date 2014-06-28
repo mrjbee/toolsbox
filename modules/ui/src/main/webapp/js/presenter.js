@@ -30,7 +30,7 @@ var PresenterPrototype = {
                 type:"copy",
                 srcFile:this._model.selectedFile.id,
                 dstFile:this._copyBrowserView.getOpenFolder().id,
-                removeRequired: this._view.copyDialogRemoveCheckBox.attr("checked")
+                removeRequired: this._view.copyDialogRemoveCheckBox.is(':checked')
             }, function(){
                 this._unlockUI();
             }.bind(this), function(status){
@@ -95,14 +95,18 @@ var PresenterPrototype = {
                 aEl = $(document.createElement("a"));
                 liEl.append(aEl);
                 aEl.append(itFile.name);
-                aEl.attr("href","#file-task-popup");
-                aEl.attr("data-rel","popup");
-                aEl.attr("data-transition","pop");
+                aEl.attr("href","#");
                 liEl.attr("data-icon","gear");
                 aEl.click({
                         file:itFile
                     },function(event){
                         me._model.selectedFile = event.data.file;
+                        me._view.taskChoosePopup.popup("open",{
+                            x:event.clientX,
+                            y:event.clientY,
+                            positionTo: "origin",
+                            transition: "slideup"
+                        });
                     }.bind(me));
                 return liEl;
             }
@@ -229,5 +233,10 @@ var PresenterPrototype = {
 
     _closeActionPopup : function(){
         this._view.taskChoosePopup.popup("close");
+    },
+
+    _highlightFileManagerTab: function(){
+        $('#fileManagerTab').addClass('ui-btn-active');
     }
+
 }

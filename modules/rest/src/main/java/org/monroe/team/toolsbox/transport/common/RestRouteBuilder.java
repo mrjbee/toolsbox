@@ -2,6 +2,7 @@ package org.monroe.team.toolsbox.transport.common;
 
 
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.Policy;
@@ -18,6 +19,7 @@ public abstract class RestRouteBuilder extends RouteBuilder{
 
         onException(Exceptions.IdNotFoundException.class)
                 .handled(true)
+                .to("log:toolsbox.Core?level=WARN&showAll=true&multiline=true&showStackTrace=true")
                 .setBody(constant(null))
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(404))
                 .process(new Processor() {
@@ -29,6 +31,7 @@ public abstract class RestRouteBuilder extends RouteBuilder{
 
         onException(Exceptions.InvalidRequestException.class)
                 .handled(true)
+                .to("log:toolsbox.Core?level=WARN&showAll=true&multiline=true&showStackTrace=true")
                 .setBody(constant(null))
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400));
 

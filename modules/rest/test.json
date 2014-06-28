@@ -1,9 +1,6 @@
 {
-  "storageLookupConfigurations": [
-    {
-      "filePath": "/mnt",
-      "scanLevel": 3
-    }
-  ],
-"type":"not-copy"
+  "type":"copy",
+  "srcFile":1,
+  "dstFile":2,
+  "removeRequired":true
 }

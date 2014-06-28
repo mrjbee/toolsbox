@@ -28,7 +28,7 @@
             </form>
     </div>
 
-    <div data-history="false" data-role="popup" id="copyDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:98%;">
+    <div data-history="false" data-role="popup" id="copyDialog" data-theme="b" data-dismissible="false" style="max-width:98%;">
         <div data-role="header" data-theme="a">
             <h1>Copy File</h1>
         </div>
@@ -59,17 +59,35 @@
     </div>
     <div role="main" class="ui-content">
         <div class="grid-content ui-grid">
-            <div class="ui-block-a ui-body ui-body-a ui-corner-all">
+            <div class="top-panel ui-block-a ui-body-a ui-corner-all">
                 <h3>Storages statistic</h3>
                 <div class="transperent-panel">
                     <b>Todo: Space statistic</b>
                 </div>
             </div>        
-            <div class="ui-block-b ui-body-a ui-corner-all">
-                <h3>File Browser</h3>
-                <ul data-role="listview" data-inset="true" id="file-browser-list">
-                    <li data-role="list-divider">Storages</li>
-                </ul>
+            <div class="top-panel ui-block-b ui-body-a ui-corner-all">
+                <div data-role="tabs" id="tabs" >
+                    <div data-role="navbar" id="navbar"  data-iconpos="bottom">
+                        <ul>
+                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-btn-active " id="fileManagerTab">File Manager</a></li>
+                            <li><a href="#two" data-icon="star" data-ajax="false" >Download Manager</a></li>
+                        </ul>
+                    </div>
+                    <div id="one">
+                        <ul data-role="listview" id="file-browser-list">
+                            <li data-role="list-divider">Storages</li>
+                        </ul>
+                    </div>
+                    <div id="two">
+                        <ul data-role="listview" id="downloads-browser-list">
+                            <li><a href="#">Acura</a></li>
+                            <li><a href="#">Audi</a></li>
+                            <li><a href="#">BMW</a></li>
+                            <li><a href="#">Cadillac</a></li>
+                            <li><a href="#">Ferrari</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
