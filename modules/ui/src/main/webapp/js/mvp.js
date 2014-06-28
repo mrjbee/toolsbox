@@ -11,6 +11,7 @@ function initMVP(){
         infolabel:$("#info-label"),
         lockPanel: $("#lockPanel"),
         fileBrowserList:$("#file-browser-list"),
+        fileBrowserTopBtn:$("#file-browser-top-btn"),
         taskChoosePopup:$("#file-task-popup"),
         copyTaskItem:$("#copy-task-item"),
         copyDialog:$("#copyDialog"),

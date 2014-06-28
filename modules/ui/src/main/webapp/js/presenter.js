@@ -14,6 +14,10 @@ var PresenterPrototype = {
             this.initiateLogin();
         }.bind(this));
 
+        this._view.fileBrowserTopBtn.click(function(){
+            this._rootBrowserView.moveToRoot();
+        }.bind(this));
+
         this._view.copyDialogStorageListBtn.click(function(){
             this._copyBrowserView.moveToRoot();
         }.bind(this));
@@ -61,6 +65,7 @@ var PresenterPrototype = {
             cancelLoadingRendering:function () {me._unlockUI()},
             rootView:function () {return me._view.fileBrowserList},
             renderHeader:function (selectedFiles) {
+                var liEl;
                 var caption = "Available Storages"
                 if (selectedFiles.length != 0){
                     caption = "";
@@ -68,7 +73,6 @@ var PresenterPrototype = {
                         caption=caption+"/"+selectedFiles[i].name;
                     }
                 }
-                var liEl;
                 liEl = $(document.createElement("li"));
                 liEl.attr("data-role","list-divider");
                 liEl.css("direction","rtl");
