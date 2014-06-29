@@ -20,7 +20,10 @@ function initMVP(){
         copyDialogStorageListBtn:$("#copy-dialog-storage-btn"),
         copyDialogRemoveCheckBox:$("#copyDialogRemoveCheckBox"),
         copyDialogInfoLabel:$("#copy-dialog-info-label"),
-        copyDialogCopyBtn:$("#copy-dialog-copy-btn")
+        copyDialogCopyBtn:$("#copy-dialog-copy-btn"),
+        tasksTabBtn:$("#tasks-tab-btn"),
+        filesTabBtn:$("#file-tab-btn"),
+        taskBrowserList:$("#task-browser-list")
     });
 
     //TODO: disbale form submission. Place it in presenter

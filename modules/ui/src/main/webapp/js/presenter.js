@@ -5,10 +5,14 @@ var PresenterPrototype = {
     _view: null,
     _rootBrowserView: null,
     _copyBrowserView: null,
+    _taskWidgetFactory: null,
+    _taskWidgets:{},
 
     constructor:function _constructor(model,view){
+        var me = this;
         this._model = model;
         this._view = view;
+        this._taskWidgetFactory = Object.create(TaskWidgetFactoryPrototype);
 
         this._view.loginBtn.click(function(){
             this.initiateLogin();
@@ -21,6 +25,38 @@ var PresenterPrototype = {
         this._view.copyDialogStorageListBtn.click(function(){
             this._copyBrowserView.moveToRoot();
         }.bind(this));
+
+        this._view.filesTabBtn.on('click', function(){
+           me._model.disablePeriodicalTaskUpdate();
+        });
+
+        this._view.tasksTabBtn.on('click', function () {
+            me._model.requestPeriodicalTaskUpdate(function(tasks){
+                var itTask, itWidget, taskMap={};
+                for(var i =0;i<tasks.length; i++){
+                    itTask = tasks[i];
+                    if (this._taskWidgets["task"+itTask.taskId]){
+                        itWidget = this._taskWidgets["task"+itTask.taskId];
+                        itWidget.update(itTask);
+                    } else {
+                        itWidget = this._taskWidgetFactory.createFor(itTask);
+                        this._taskWidgets["task"+itTask.taskId] = itWidget;
+                        itWidget.show(this._view.taskBrowserList);
+                    }
+                    taskMap["task"+itTask.taskId];
+                }
+                for(var itWidgetName in this._taskWidgets){
+                    if(taskMap[itWidgetName == null]){
+                        //TODO: test it
+                        alert("Hope it will work:"+itWidgetName);
+                        itWidget = this._taskWidgets[itWidgetName];
+                        delete this._taskWidgets[itWidgetName];
+                        itWidget.close(this._view.taskBrowserList);
+                    }
+                }
+            }.bind(me));
+        });
+
 
         this._view.copyDialogCopyBtn.click(function(){
             if (this._copyBrowserView.getOpenFolder() == null) {
@@ -58,8 +94,8 @@ var PresenterPrototype = {
                 }.bind(this));
             }.bind(this), 1000);
         }.bind(this));
+
         this._rootBrowserView = Object.create(FileBrowserPrototype);
-        var me = this;
         this._rootBrowserView.constructor({
             requestLoadingRendering : function () {me._lockUI(true)},
             cancelLoadingRendering:function () {me._unlockUI()},
@@ -237,10 +273,7 @@ var PresenterPrototype = {
 
     _closeActionPopup : function(){
         this._view.taskChoosePopup.popup("close");
-    },
-
-    _highlightFileManagerTab: function(){
-        $('#fileManagerTab').addClass('ui-btn-active');
     }
+
 
 }

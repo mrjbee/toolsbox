@@ -6,11 +6,12 @@ var ModelPrototype = {
     //_serverUrl : "http://194.29.62.160:8880/remote-control-api/rest",
 
     //Test URl
-    _serverUrl : "http://192.168.0.200:8080/remfly-api/rest",
+    _serverUrl : "http://192.168.0.201:8080/remfly-api/rest",
 
     _username : "",
     _password : "",
 
+    _taskUpdateTid:null,
     //Server statistic fields
     //@Deprecated
     awakeMinutes : 0,
@@ -93,6 +94,34 @@ var ModelPrototype = {
                 whenSuccess()
             } else {
                 whenFails(response.statusCode);
+            }
+        }.bind(this))
+    },
+
+    requestPeriodicalTaskUpdate:function(onTasks){
+        this.disablePeriodicalTaskUpdate();
+        this._requestTasksDetails(onTasks);
+        this._taskUpdateTid = setInterval(function(){
+            this._requestTasksDetails(onTasks)
+        }.bind(this), 1000);
+    },
+
+    disablePeriodicalTaskUpdate: function(){
+        if (this._taskUpdateTid){
+            clearInterval(this._taskUpdateTid);
+        }
+    },
+
+    _requestTasksDetails : function (onSuccess, onFailure) {
+        this._doRequest({
+            type: "GET",
+            url: this._serverUrl + '/tasks'
+        }, function (response) {
+            if (response.statusCode == 200) {
+                var tasks = $.parseJSON(response.resultText);
+                onSuccess(tasks);
+            } else {
+                //onFailure(response.statusCode);
             }
         }.bind(this))
     },

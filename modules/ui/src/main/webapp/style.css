@@ -62,7 +62,7 @@ body {
 
 .ui-body-a {
     background-color: rgba(255,255,255, 0.60);
-    padding: 20px 20px 20px 20px;
+    padding: 5px;
 }
 
 .text-value {
@@ -85,6 +85,7 @@ body {
     box-shadow: 0px 0px 3px #000000;
 }
 
+
 .warning{
     color: #A10342;
     margin: 2px 2px 2px 2px;
@@ -99,4 +100,58 @@ body {
     width: 100%;
     z-index: 3;
     display: none;
+}
+
+.task-panel{
+    background-color: rgba(255,255,255, 0.95);
+    border-color: #FFFFFF;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0px 0px 3px #000000;
+    margin: 10px;
+    padding: 0px;
+}
+
+.task-header{
+   font-size: 1.2em;
+   padding-left: 5px;
+}
+.task-body{
+    padding: 3px;
+    padding-left: 10px;
+    font-size: 0.9em;;
+}
+
+.task-footer{
+    padding: 3px;
+    padding-left: 5px;
+}
+.task-footer label{
+    font-size: 0.7em;
+}
+.task-footer span {
+    padding-left: 5px;
+    padding-right: 15px;
+}
+
+.raw-data{
+    color:#436DBA;
+}
+.progress-bar{
+    display: table;
+}
+.progress-bar label {
+    display: table-cell;
+    vertical-align: middle;
+    padding-right: 10px;
+}
+.progress-bar .ui-slider {
+    display: table-cell;
+    width: 100%;
+}
+.progress-bar input[type=range], .ui-slider-handle {
+    display: none;
+}
+.progress-bar .ui-slider-track {
+    margin: 0px;
 }

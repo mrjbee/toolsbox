@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="themes/jquery.mobile.structure-1.4.2.min.css" />
     <link rel="stylesheet" type="text/css" href="style.css"/>
     <script src="js/file-browser.js"></script>
+    <script src="js/tasks.js"></script>
     <script src="js/model.js"></script>
     <script src="js/presenter.js"></script>
     <script src="js/mvp.js"></script>
@@ -69,24 +70,20 @@
                 <div data-role="tabs" id="tabs" >
                     <div data-role="navbar" id="navbar"  data-iconpos="left">
                         <ul>
-                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-btn-active " id="fileManagerTab">File Manager</a></li>
-                            <li><a href="#two" data-icon="star" data-ajax="false" >Download Manager</a></li>
+                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-btn-active " id="file-tab-btn">Files</a></li>
+                            <li><a href="#two" data-icon="star" data-ajax="false" id="tasks-tab-btn" >Tasks</a></li>
                         </ul>
                     </div>
                     <div id="one">
-                        <ul data-role="listview" id="file-browser-list">
+                        <a href="#" class="ui-btn ui-mini" id="file-browser-top-btn">Back to storage list</a>
+                        <ul data-role="listview" id="file-browser-list" class="transperent-panel">
                             <li data-role="list-divider">Storages</li>
                         </ul>
-                        <a href="#" class="ui-btn ui-mini" id="file-browser-top-btn">Back to storage list</a>
                     </div>
                     <div id="two">
-                        <ul data-role="listview" id="downloads-browser-list">
-                            <li><a href="#">Acura</a></li>
-                            <li><a href="#">Audi</a></li>
-                            <li><a href="#">BMW</a></li>
-                            <li><a href="#">Cadillac</a></li>
-                            <li><a href="#">Ferrari</a></li>
-                        </ul>
+                        <a href="#" class="ui-btn ui-mini" >Clear</a>
+                        <div id="task-browser-list">
+                        </div>
                     </div>
                 </div>
             </div>
