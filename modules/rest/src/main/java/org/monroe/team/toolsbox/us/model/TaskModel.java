@@ -1,7 +1,21 @@
 package org.monroe.team.toolsbox.us.model;
 
-/**
- * Created by mrjbee on 30/06/14.
- */
-public class TaskModel {
+
+import org.monroe.team.toolsbox.entities.Task;
+
+public interface TaskModel {
+    TaskModel withProperty(String src, String value);
+    Integer getRef();
+
+    Task.ExecutionStatus getStatus();
+
+    String getStatusAsString();
+
+    Task.Type getType();
+
+    String getTypeAsString();
+
+    Float getProgress();
+
+    <Type> Type getProperty(String src, Class<Type> requestedType);
 }

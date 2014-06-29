@@ -1,7 +1,12 @@
 package org.monroe.team.toolsbox.services;
 
-/**
- * Created by mrjbee on 30/06/14.
- */
-public class TaskManager {
+import org.monroe.team.toolsbox.entities.Task;
+import org.monroe.team.toolsbox.us.model.TaskModel;
+
+import java.util.List;
+
+public interface TaskManager {
+
+    TaskModel newTask(Task.Type type);
+    List<TaskModel> fetchAll();
 }

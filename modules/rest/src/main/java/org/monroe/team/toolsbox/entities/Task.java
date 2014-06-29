@@ -1,5 +1,6 @@
 package org.monroe.team.toolsbox.entities;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -27,13 +28,14 @@ public class Task {
     public List<Property> properties;
 
     public <T> T getProperty(final String key, Class<T> type){
-        Property property = Iterables.find(properties, new Predicate<Property>() {
+        Optional<Property> propertyHolder = Iterables.tryFind(properties, new Predicate<Property>() {
             @Override
             public boolean apply(Property property) {
                 return key.equals(property.name);
             }
         });
-        if (property == null) return null;
+        if (!propertyHolder.isPresent()) return null;
+        Property property = propertyHolder.get();
         if (String.class.equals(type)){
             return (T) property.value;
         } if (Integer.class.equals(type)) {

@@ -117,8 +117,8 @@ public class FileModelImpl implements FileModel{
         return file.exists();
     }
 
-    private void check(boolean fileMounted) {
-        if (!fileMounted){
+    private void check(boolean condition) {
+        if (!condition){
             throw new IllegalStateException();
         }
     }

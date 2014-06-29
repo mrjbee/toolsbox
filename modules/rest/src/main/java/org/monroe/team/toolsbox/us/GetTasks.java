@@ -8,8 +8,10 @@ import org.monroe.team.toolsbox.entities.Task;
 import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
 import org.monroe.team.toolsbox.repositories.TaskRepository;
 import org.monroe.team.toolsbox.services.FileManager;
+import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
 import org.monroe.team.toolsbox.us.model.FileModel;
+import org.monroe.team.toolsbox.us.model.TaskModel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,26 +20,27 @@ import java.util.List;
 @Named
 public class GetTasks implements GetTasksDefinition{
 
+
     @Inject
-    TaskRepository taskRepository;
+    TaskManager taskManager;
 
     @Inject
     FileManager fileManager;
 
     @Override
     public List<TaskResponse> perform() {
-        List<Task> taskList = taskRepository.findAll();
-        return Lists.newArrayList(Iterables.transform(taskList,new Function<Task, TaskResponse>() {
+        List<TaskModel> taskList = taskManager.fetchAll();
+        return Lists.newArrayList(Iterables.transform(taskList, new Function<TaskModel, TaskResponse>() {
             @Override
-            public TaskResponse apply(Task task) {
+            public TaskResponse apply(TaskModel task) {
                 TaskResponse taskResponse = new TaskResponse(
-                        task.id,
-                        task.status.name(),
-                        task.type.name(),
+                        task.getRef(),
+                        task.getStatusAsString(),
+                        task.getTypeAsString(),
                         null,
-                        new Float(0));
+                        task.getProgress());
 
-                switch (task.type){
+                switch (task.getType()){
                     case COPY:
                         Integer srcFileId = task.getProperty("src",Integer.class);
                         Integer dstFileId = task.getProperty("dst", Integer.class);
