@@ -7,7 +7,9 @@ import org.monroe.team.toolsbox.entities.FileDescription;
 import org.monroe.team.toolsbox.entities.Task;
 import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
 import org.monroe.team.toolsbox.repositories.TaskRepository;
+import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
+import org.monroe.team.toolsbox.us.model.FileModel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,8 +20,9 @@ public class GetTasks implements GetTasksDefinition{
 
     @Inject
     TaskRepository taskRepository;
+
     @Inject
-    FileDescriptorRepository fileDescriptorRepository;
+    FileManager fileManager;
 
     @Override
     public List<TaskResponse> perform() {
@@ -38,12 +41,18 @@ public class GetTasks implements GetTasksDefinition{
                     case COPY:
                         Integer srcFileId = task.getProperty("src",Integer.class);
                         Integer dstFileId = task.getProperty("dst", Integer.class);
-                        FileDescription srcFile = fileDescriptorRepository.findOne(srcFileId);
-                        FileDescription dstFile = fileDescriptorRepository.findOne(dstFileId);
+                        FileModel srcFile = fileManager.getById(srcFileId);
+                        FileModel dstFile = fileManager.getById(dstFileId);
+
                         if (srcFile !=null && dstFile != null) {
                             taskResponse.with("src", srcFile.getSimpleName())
-                                    .with("dst", dstFile.getSimpleName());
+                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
+                        } else {
+                            taskResponse.with("src", "NaN")
+                                    .with("dst","NaN");
+
                         }
+
                         break;
                     default:
                         throw new RuntimeException("Unsupported type");

@@ -7,7 +7,7 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
-public class StorageLookupTest {
+public class StorageModelLookupTest {
 
     final static File testFile = new File("").getAbsoluteFile();
 

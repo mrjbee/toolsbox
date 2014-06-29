@@ -1,13 +1,8 @@
 package org.monroe.team.toolsbox.transport.rest;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Headers;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.apache.camel.util.CamelContextHelper;
-import org.monroe.team.toolsbox.entities.Storage;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.transport.common.RestRouteBuilder;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;

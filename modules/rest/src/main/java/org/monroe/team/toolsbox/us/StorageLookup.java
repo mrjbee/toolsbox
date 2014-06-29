@@ -1,20 +1,17 @@
 package org.monroe.team.toolsbox.us;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.TreeTraverser;
 import com.google.common.io.Files;
 import org.apache.logging.log4j.Logger;
-import org.monroe.team.toolsbox.entities.FileDescription;
 import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.StorageManager;
-import org.monroe.team.toolsbox.entities.Storage;
+import org.monroe.team.toolsbox.us.model.StorageModel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 
 
 @Named
@@ -40,26 +37,18 @@ public class StorageLookup implements StorageLookupDefinition{
             if (isScanLevelReached(itFile,scanRoot,request.level)) return;
             if (itFile.isFile() && ".storage".equals(itFile.getName())){
                 File configFile = itFile;
+                StorageModel model = null;
                 try {
-                    Storage storage = loadStorage(configFile);
-                    storageManager.save(storage);
-                    LOG.info("Found storage = {}", storage);
+                    model = storageManager.loadStorageFromFile(configFile);
+                    LOG.info("Found storage = {}", model);
                 } catch (IOException e) {
-                    LOG.warn("Couldn`t load store = {}: {}", configFile.getAbsolutePath());
+                    LOG.warn("Found storage = {} but fails to load", model);
                     LOG.warn(e);
                 }
             }
         }
     }
 
-    private Storage loadStorage(File configFile) throws IOException {
-        Properties properties = new Properties();
-        properties.load(Files.newReader(configFile, Charsets.UTF_8));
-        Storage.StorageType type = Storage.StorageType.valueOf(properties.getProperty("type",
-                Storage.StorageType.PERMANENT.name()));
-        String label = properties.getProperty("label", "undefined");
-        return new Storage(label,type, FileDescription.create(configFile.getParentFile(), FileDescription.Type.ROOT));
-    }
 
     static boolean isScanLevelReached(File file, File root, int level) {
         File itParent = file.getParentFile();

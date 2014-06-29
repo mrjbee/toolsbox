@@ -46,7 +46,7 @@ var CopyTaskWidgetPrototype = {
         this._statusLabel.text(this._task.status);
         this._speedLabel.text("NaN");
         this._estimationLabel.text("NaN");
-        this._progressbar.val(0);
+        this._progressbar.val(Math.round(this._task.progress*100));
         this._progressbar.slider("refresh");
     },
 

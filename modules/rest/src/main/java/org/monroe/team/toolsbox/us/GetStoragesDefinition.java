@@ -1,5 +1,5 @@
 package org.monroe.team.toolsbox.us;
-import org.monroe.team.toolsbox.entities.Storage;
+import org.monroe.team.toolsbox.us.model.impl.StorageModelImpl;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public interface GetStoragesDefinition {
     public static class StorageResponse {
         public Integer id;
         public String label;
-        public Storage.StorageType type;
+        public StorageModelImpl.StorageType type;
         public Integer refFileId;
     }
 }
