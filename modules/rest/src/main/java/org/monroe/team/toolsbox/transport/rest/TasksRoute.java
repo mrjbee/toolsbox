@@ -6,6 +6,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.transport.common.RestRouteBuilder;
 import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
+import org.monroe.team.toolsbox.us.ExecutePendingTasks;
 import org.monroe.team.toolsbox.us.GetTasksDefinition;
 import org.monroe.team.toolsbox.us.common.Exceptions;
 
@@ -22,12 +23,20 @@ public class TasksRoute extends RestRouteBuilder{
     @Inject
     GetTasksDefinition getTasks;
 
+    @Inject
+    ExecutePendingTasks executePendingTasks;
+
     @Override
     protected void doConfigure() {
+        from("timer://taskExecutionSelect?fixedRate=true&period=60s")
+                .routeId("taskExecutionSelectLoop")
+                .bean(executePendingTasks, "perform");
+
         from("restlet:/tasks")
             .routeId("getTasks")
                 .bean(getTasks,"perform")
                 .marshal().json(JsonLibrary.Gson);
+
 
         from("restlet:/task?restletMethod=post")
             .routeId("newTask")

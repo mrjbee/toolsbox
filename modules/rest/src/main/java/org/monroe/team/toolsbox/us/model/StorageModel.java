@@ -15,6 +15,12 @@ public interface StorageModel {
 
     FileModel asFileModel();
 
+    Integer getDeviceId();
+
+    int getMaxWriteThreadsCount();
+
+    int getMaxReadThreadsCount();
+
 
     public static enum StorageType{
         PORTABLE, PERMANENT;

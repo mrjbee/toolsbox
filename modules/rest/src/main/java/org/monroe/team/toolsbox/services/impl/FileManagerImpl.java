@@ -42,9 +42,9 @@ public class FileManagerImpl implements FileManager{
     }
 
     @Override
-    public FileModel getById(Integer parentId) {
+    public FileModel getById(Integer fileId) {
         Dependency<FileDescription> fileDescriptionDependency =
-                new JPADependency<FileDescription, Integer>(fileDescriptorRepository,parentId);
+                new JPADependency<FileDescription, Integer>(fileDescriptorRepository, fileId);
         Dependency<StorageModel> storageModelDependency = new InMemoryDependency<StorageModel>(
                 new StorageInstanceProvider(fileDescriptionDependency,storageManager));
         return new FileModelImpl(this,fileDescriptionDependency, storageModelDependency);

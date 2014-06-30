@@ -70,4 +70,19 @@ public class StorageModelImpl implements StorageModel {
     public FileModel asFileModel() {
         return root;
     }
+
+    @Override
+    public Integer getDeviceId() {
+        return getType().equals(StorageType.PERMANENT)?1:0;
+    }
+
+    @Override
+    public int getMaxWriteThreadsCount() {
+        return getType().equals(StorageType.PERMANENT)?2:1;
+    }
+
+    @Override
+    public int getMaxReadThreadsCount() {
+        return getType().equals(StorageType.PERMANENT)?4:2;
+    }
 }

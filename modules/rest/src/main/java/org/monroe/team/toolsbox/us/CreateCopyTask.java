@@ -26,7 +26,7 @@ public class CreateCopyTask implements CreateCopyTaskDefinition{
 
     @Override
     public TaskResponse perform(CreateCopyTaskRequest copyTaskRequest) {
-        TaskModel taskModel = taskManager.newTask(Task.Type.COPY)
+        TaskModel taskModel = taskManager.newTask(TaskModel.Type.COPY)
                 .withProperty("src", copyTaskRequest.srcFile.toString())
                 .withProperty("dst", copyTaskRequest.dstFile.toString())
                 .withProperty("remove", copyTaskRequest.removeSrcFile.toString());

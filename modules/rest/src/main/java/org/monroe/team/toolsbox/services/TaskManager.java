@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface TaskManager {
 
-    TaskModel newTask(Task.Type type);
+    TaskModel newTask(TaskModel.Type type);
     List<TaskModel> fetchAll();
 }

@@ -8,7 +8,7 @@ import java.io.File;
 
 public interface FileManager {
     public void linkStorage(StorageModel storage);
-    FileModel getById(Integer parentId);
+    FileModel getById(Integer fileId);
     FileModel mergeByFile(File file, StorageModel storageModel);
     FileModel getParentFor(FileModel fileModel, StorageModel storageModel);
 }

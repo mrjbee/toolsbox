@@ -3,10 +3,6 @@ package org.monroe.team.toolsbox.us;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.monroe.team.toolsbox.entities.FileDescription;
-import org.monroe.team.toolsbox.entities.Task;
-import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
-import org.monroe.team.toolsbox.repositories.TaskRepository;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
@@ -38,7 +34,7 @@ public class GetTasks implements GetTasksDefinition{
                         task.getStatusAsString(),
                         task.getTypeAsString(),
                         null,
-                        task.getProgress());
+                        task.getExecutionProgress());
 
                 switch (task.getType()){
                     case COPY:

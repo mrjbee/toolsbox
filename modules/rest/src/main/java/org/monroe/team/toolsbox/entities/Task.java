@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.monroe.team.toolsbox.us.model.TaskModel;
 
 import javax.persistence.*;
 import java.util.List;
@@ -16,10 +17,10 @@ public class Task {
     public Integer id;
 
     @Column(nullable = false)
-    public ExecutionStatus status;
+    public TaskModel.ExecutionStatus status;
 
     @Column(nullable = false)
-    public Type type;
+    public TaskModel.Type type;
 
     @Column(nullable = false)
     public Long creationTime;
@@ -43,14 +44,6 @@ public class Task {
         }else{
             throw new RuntimeException("Unsupported type");
         }
-    }
-
-    public static enum Type{
-        COPY, TRANSFER, DELETE
-    }
-
-    public static enum ExecutionStatus {
-        AWAITING, BLOCKED, IN_PROGRESS, DONE, FAIL
     }
 
 }
