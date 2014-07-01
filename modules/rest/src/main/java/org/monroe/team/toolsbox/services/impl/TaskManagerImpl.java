@@ -8,6 +8,7 @@ import org.monroe.team.toolsbox.entities.Task;
 import org.monroe.team.toolsbox.repositories.PropertyRepository;
 import org.monroe.team.toolsbox.repositories.TaskRepository;
 import org.monroe.team.toolsbox.services.ExecutionManager;
+import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.model.impl.TaskModelImpl;
 import org.monroe.team.toolsbox.us.model.impl.dependecy.InMemoryDependency;
@@ -27,6 +28,9 @@ public class TaskManagerImpl implements TaskManager{
     PropertyRepository propertyRepository;
 
     @Inject
+    FileManager fileManager;
+
+    @Inject
     ExecutionManager executionManager;
 
     @Override
@@ -42,7 +46,7 @@ public class TaskManagerImpl implements TaskManager{
     private org.monroe.team.toolsbox.us.model.TaskModel createByTask(final Task task) {
         JPADependency<Task,Integer> taskDependency = new JPADependency<Task, Integer>(taskRepository,task.id,task);
         InMemoryDependency<Execution> taskExecution = createExecutionDependency(task);
-        return new TaskModelImpl(taskDependency, taskExecution, this, propertyRepository, executionManager);
+        return new TaskModelImpl(taskDependency, taskExecution, this, propertyRepository, executionManager,fileManager);
     }
 
     private InMemoryDependency<Execution> createExecutionDependency(final Task task) {

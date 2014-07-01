@@ -22,7 +22,11 @@ public interface TaskModel {
 
     void execute() throws ExecutionManager.ExecutionUnavailableException;
 
+    void restart() throws ExecutionManager.ExecutionUnavailableException;
+
     void updateStatus(ExecutionStatus progress);
+
+    boolean isHardInterrupted();
 
     public static enum Type{
         COPY, TRANSFER, DELETE

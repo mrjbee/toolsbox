@@ -28,7 +28,7 @@ public class TasksRoute extends RestRouteBuilder{
 
     @Override
     protected void doConfigure() {
-        from("timer://taskExecutionSelect?fixedRate=true&period=60s")
+        from("timer://taskExecutionSelect?fixedRate=true&period=1s")
                 .routeId("taskExecutionSelectLoop")
                 .bean(executePendingTasks, "perform");
 

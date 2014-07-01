@@ -79,18 +79,9 @@ public class TaskModelImpl implements TaskModel {
             case Finished: return 1f;
             case Fails: return 0.5f;
             case Progress:
+                if (!executionDependency.exists()) return 0f;
                 return executionDependency.get().getProgress();
         }
-        if (ExecutionStatus.Pending.equals(getStatus())){
-            return 0f;
-        }
-        if (ExecutionStatus.Finished.equals(getStatus())){
-            return 1f;
-        }
-        if (ExecutionStatus.Fails.equals(getStatus())){
-            return 0.25f;
-        }
-
         return 0f;
     }
 
@@ -107,11 +98,22 @@ public class TaskModelImpl implements TaskModel {
 
     @Override
     public void execute() throws ExecutionManager.ExecutionUnavailableException {
+        executeImpl(false);
+    }
+
+    private void executeImpl(boolean restart) throws ExecutionManager.ExecutionUnavailableException {
         switch (getType()){
-            case COPY: executionManager.executeAsCopyTask(this);
+            case COPY:
+                executionManager.executeAsCopyTask(this,restart);
+                break;
             default:
                 throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public void restart() throws ExecutionManager.ExecutionUnavailableException {
+        executeImpl(true);
     }
 
     @Override
@@ -119,6 +121,11 @@ public class TaskModelImpl implements TaskModel {
         check(isHealthy());
         taskDependency.get().status = progress;
         taskDependency.save();
+    }
+
+    @Override
+    public boolean isHardInterrupted() {
+        return getStatus().equals(ExecutionStatus.Progress) && !executionDependency.exists();
     }
 
     private void check(boolean condition) {

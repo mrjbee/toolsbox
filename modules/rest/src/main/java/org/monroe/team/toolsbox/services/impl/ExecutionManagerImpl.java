@@ -20,12 +20,13 @@ import java.util.concurrent.TimeUnit;
 public class ExecutionManagerImpl implements ExecutionManager{
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private Map <Integer, Execution> currentExecution = new HashMap<Integer, Execution>();
+    private Map <Integer, Execution> currentExecutionsMap = new HashMap<Integer, Execution>();
     private Map <Integer, Integer> readThreadsPerDeviceMap = new HashMap<Integer, Integer>();
     private Map <Integer, Integer> writeThreadsPerDeviceMap = new HashMap<Integer, Integer>();
 
     @PreDestroy
     public void shutdown(){
+        Logs.core.info("Execution manager graceful shutdown started.");
         executorService.shutdownNow();
         try {
             executorService.awaitTermination(10, TimeUnit.SECONDS);
@@ -36,11 +37,11 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     @Override
     public Execution getTaskExecution(Integer taskId) {
-        return currentExecution.get(taskId);
+        return currentExecutionsMap.get(taskId);
     }
 
     @Override
-    public synchronized void executeAsCopyTask(TaskModel taskModel) throws ExecutionUnavailableException {
+    public synchronized void executeAsCopyTask(final TaskModel taskModel, boolean restart) throws ExecutionUnavailableException {
         final FileModel srcFile = taskModel.getProperty("src", FileModel.class);
         final FileModel dstFile = taskModel.getProperty("dst", FileModel.class);
         if (!srcFile.isExistsLocally() || !dstFile.isExistsLocally()) {
@@ -53,29 +54,31 @@ public class ExecutionManagerImpl implements ExecutionManager{
         final int readDeviceId = srcFile.getStorage().getDeviceId();
         final int writeDeviceId = dstFile.getStorage().getDeviceId();
 
-        BaseExecution execution = new CopyExecution(new Function<Void, Void>() {
+        final BaseExecution execution = new CopyExecution(new Function<Void, Void>() {
             @Override
             public Void apply(Void input) {
                 freeThreads(readDeviceId, writeDeviceId);
+                currentExecutionsMap.remove(taskModel.getRef());
                 return null;
             }
-        },taskModel);
+        },taskModel, !restart);
         captureThreads(readDeviceId, writeDeviceId);
+        currentExecutionsMap.put(taskModel.getRef(),execution);
         taskModel.updateStatus(TaskModel.ExecutionStatus.Progress);
         executorService.execute(execution);
     }
 
     private synchronized void freeThreads(int readDeviceId, int writeDeviceId) {
-        captureThread(readDeviceId, readThreadsPerDeviceMap,-1);
-        captureThread(writeDeviceId, writeThreadsPerDeviceMap,-1);
+        indexThreads(readDeviceId, readThreadsPerDeviceMap, -1);
+        indexThreads(writeDeviceId, writeThreadsPerDeviceMap, -1);
     }
 
     private synchronized void captureThreads(int readFromStorage, int writeToStorage) {
-        captureThread(readFromStorage, readThreadsPerDeviceMap,1);
-        captureThread(writeToStorage, writeThreadsPerDeviceMap,1);
+        indexThreads(readFromStorage, readThreadsPerDeviceMap, 1);
+        indexThreads(writeToStorage, writeThreadsPerDeviceMap, 1);
     }
 
-    private void captureThread(int deviceId, Map<Integer, Integer> threadPerDeviceMap, int delta) {
+    private void indexThreads(int deviceId, Map<Integer, Integer> threadPerDeviceMap, int delta) {
         Integer existsCount = threadPerDeviceMap.get(deviceId);
         if (existsCount == null) existsCount = new Integer(0);
         threadPerDeviceMap.put(deviceId, existsCount+delta);
@@ -83,24 +86,29 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
 
     private synchronized boolean isDevicesBusyForNewWrite(StorageModel storage) {
-        return isDeviceBusy(writeThreadsPerDeviceMap, storage.getIdentifier(), storage.getMaxWriteThreadsCount());
+        return isDeviceBusy(writeThreadsPerDeviceMap, storage.getDeviceId(), storage.getMaxWriteThreadsCount());
     }
 
     private synchronized boolean isDevicesBusyForNewRead(StorageModel storage) {
-        return isDeviceBusy(readThreadsPerDeviceMap, storage.getIdentifier(), storage.getMaxReadThreadsCount());
+        return isDeviceBusy(readThreadsPerDeviceMap, storage.getDeviceId(), storage.getMaxReadThreadsCount());
     }
 
 
     private boolean isDeviceBusy(Map<Integer, Integer> existsThreadsPerDeviceMap, int deviceId, int maxAllowedThreadCount) {
         Integer existCount = existsThreadsPerDeviceMap.get(deviceId);
-        return  (existCount == null || (existCount+1) <= maxAllowedThreadCount);
+        return  !(existCount == null || (existCount+1) <= maxAllowedThreadCount);
     }
 
 
     private static class CopyExecution extends BaseExecution {
 
-        private CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task) {
-            super(postExecutionAction,task);
+        private CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun) {
+            super(postExecutionAction,task, isCleanRun);
+        }
+
+        @Override
+        protected void cleanupPreviousExecution() {
+
         }
 
         @Override
@@ -121,7 +129,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
         @Override
         protected void execute(int i, int stepCount) {
             try {
-                Thread.sleep(1000);
+                if (i == 5 && getTask().getRef()%3 == 0){
+                    throw new IllegalStateException("Something wrong");
+                }
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 //nothing here
             }
@@ -135,10 +146,12 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private final Function<Void,Void> onFinish;
         private Map<String,String> statisticMap = new HashMap<String, String>();
         private Float progress = 0f;
+        private final boolean cleanRun;
 
-        private BaseExecution(Function<Void,Void> onFinish, TaskModel task) {
+        private BaseExecution(Function<Void, Void> onFinish, TaskModel task, boolean cleanRun) {
             this.task = task;
             this.onFinish = onFinish;
+            this.cleanRun = cleanRun;
         }
 
         @Override
@@ -157,6 +170,9 @@ public class ExecutionManagerImpl implements ExecutionManager{
         @Override
         public void run() {
             try {
+                if(!cleanRun){
+                    cleanupPreviousExecution();
+                }
                 allocateResources();
                 int stepCount = getStepCount();
                 for (int i=0;i<stepCount;i++){
@@ -181,7 +197,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
                     Logs.core.warn("Exception during rollback task = "+task.getRef(), rollbackException);
                 }
             }
+            onFinish.apply(null);
         }
+
+        protected abstract void cleanupPreviousExecution();
 
         final public synchronized void publishStatistic(String key,String value){
             statisticMap.put(key, value);

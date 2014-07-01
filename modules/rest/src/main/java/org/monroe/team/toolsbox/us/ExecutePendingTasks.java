@@ -17,11 +17,20 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
     @Override
     public void perform() {
         for(TaskModel task:manager.fetchAll()){
-            if(TaskModel.ExecutionStatus.Pending.equals(task.getStatus())){
+
+            if (task.isHardInterrupted()){
                 try {
-                    task.execute();
+                    task.restart();
                 } catch (ExecutionManager.ExecutionUnavailableException e) {
-                    Logs.core.warn("Exception during execution task = "+task.getRef(), e);
+                    Logs.core.warn("Exception during restart task = " + task.getRef(), e);
+                }
+            } else {
+                if (TaskModel.ExecutionStatus.Pending.equals(task.getStatus())) {
+                    try {
+                        task.execute();
+                    } catch (ExecutionManager.ExecutionUnavailableException e) {
+                        Logs.core.warn("Exception during execution task = " + task.getRef(), e);
+                    }
                 }
             }
         }
