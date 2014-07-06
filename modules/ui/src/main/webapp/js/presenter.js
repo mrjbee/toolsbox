@@ -263,6 +263,29 @@ var PresenterPrototype = {
 
     _initiateModelUpdate : function() {
         this._rootBrowserView.moveToRoot();
+        this._model.requestPeriodicalStorageUpdate(function(storages){
+            //render storage
+            this._view.storageBrowserList.empty();
+            var liEl,aEl,itStorage;
+            for(var i=0;i<storages.length;i++){
+                itStorage=storages[i];
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                liEl.append(aEl);
+                aEl.append(itStorage.label);
+                aEl.attr("href","#");
+                //liEl.attr("data-icon","gear");
+                aEl.click({
+                    file:itStorage
+                },function(event){
+                   this._rootBrowserView.moveToStorage(event.data.file);
+                }.bind(this));
+                aEl.append('<p>Free space <strong>'+itStorage.freeSpace+'</strong></p>');
+                aEl.append('<p>Total space <strong>'+itStorage.space+'</strong></p>');
+                this._view.storageBrowserList.append(liEl);
+            }
+            this._view.storageBrowserList.listview( "refresh" );
+        }.bind(this))
     },
 
     _askForReLogin : function(statusCode){

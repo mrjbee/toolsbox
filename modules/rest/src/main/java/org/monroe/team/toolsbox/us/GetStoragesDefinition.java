@@ -12,5 +12,7 @@ public interface GetStoragesDefinition {
         public String label;
         public StorageModelImpl.StorageType type;
         public Integer refFileId;
+        public String space;
+        public String freeSpace;
     }
 }

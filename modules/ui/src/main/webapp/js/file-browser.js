@@ -37,6 +37,18 @@ var FileBrowserPrototype = {
         }.bind(this));
     },
 
+    moveToStorage:function(itStorage){
+        var storageAsFile = {
+            id:itStorage.refFileId,
+            name:itStorage.label,
+            folder:true
+        };
+
+        this._selectedFiles = [];
+        this._selectedFiles.push(storageAsFile);
+        this._moveToFile(storageAsFile);
+    },
+
     _moveToFile: function(file){
         this._uiDelegate.requestLoadingRendering();
         this._dataProvider.getSubFiles(file, function(files){

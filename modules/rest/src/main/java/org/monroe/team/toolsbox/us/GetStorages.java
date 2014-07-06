@@ -2,6 +2,7 @@ package org.monroe.team.toolsbox.us;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.us.model.StorageModel;
 import org.monroe.team.toolsbox.us.model.impl.StorageModelImpl;
 import org.monroe.team.toolsbox.services.StorageManager;
@@ -27,6 +28,8 @@ public class GetStorages implements GetStoragesDefinition{
                 answer.label = storageModel.getLabel();
                 answer.type = storageModel.getType();
                 answer.refFileId = storageModel.getFileRef();
+                answer.space = Files.convertToBestUnitsAsString(storageModel.getTotalSpace());
+                answer.freeSpace = Files.convertToBestUnitsAsString(storageModel.getFreeSpace());
                 return answer;
             }
         });

@@ -23,7 +23,8 @@ function initMVP(){
         copyDialogCopyBtn:$("#copy-dialog-copy-btn"),
         tasksTabBtn:$("#tasks-tab-btn"),
         filesTabBtn:$("#file-tab-btn"),
-        taskBrowserList:$("#task-browser-list")
+        taskBrowserList:$("#task-browser-list"),
+        storageBrowserList:$("#storage-browser-list")
     });
 
     //TODO: disbale form submission. Place it in presenter

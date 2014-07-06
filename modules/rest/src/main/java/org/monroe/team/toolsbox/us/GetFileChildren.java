@@ -55,7 +55,7 @@ public class GetFileChildren implements GetFileChildrenDefinition{
                                 fileModel.getRef(),
                                 fileName,
                                 fileModel.isDirectory(),
-                                Files.convertToUnitsAsString(fileModel.getByteSize(), Files.Units.Megabyte));
+                                Files.convertToBestUnitsAsString(fileModel.getByteSize()));
                         return fileResponse;
                     }
                 }), new Predicate<FileResponse>() {

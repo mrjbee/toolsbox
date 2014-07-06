@@ -28,6 +28,10 @@ public interface StorageModel {
 
     String getSpeedAsString();
 
+    long getTotalSpace();
+
+    long getFreeSpace();
+
     public static enum StorageType{
         PORTABLE, PERMANENT;
     }

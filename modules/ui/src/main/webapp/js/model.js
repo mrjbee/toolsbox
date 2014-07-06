@@ -126,6 +126,28 @@ var ModelPrototype = {
         }.bind(this))
     },
 
+
+    requestPeriodicalStorageUpdate:function(onStorage){
+        this._requestStorageDetails(onStorage);
+        setInterval(function(){
+            this._requestStorageDetails(onStorage)
+        }.bind(this), 5000);
+    },
+
+    _requestStorageDetails : function (onSuccess, onFailure) {
+        this._doRequest({
+            type: "GET",
+            url: this._serverUrl + '/storages'
+        }, function (response) {
+            if (response.statusCode == 200) {
+                var storages = $.parseJSON(response.resultText);
+                onSuccess(storages);
+            } else {
+                if(onFailure) onFailure(response.statusCode);
+            }
+        }.bind(this))
+    },
+
     _doRequest: function __doRequest(ajaxDetails, callback) {
         $.ajax(ajaxDetails).always(function (dataorJQXHR, textStatus, jqXHRorErrorThrown) {
             if (textStatus == "success") {

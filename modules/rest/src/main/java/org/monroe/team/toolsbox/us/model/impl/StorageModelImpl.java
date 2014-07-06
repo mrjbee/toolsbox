@@ -117,6 +117,16 @@ public class StorageModelImpl implements StorageModel {
         return new DecimalFormat("##.##").format(mByteInMin)+" mb/sec";
     }
 
+    @Override
+    public long getFreeSpace() {
+        return (isMount())?asFileModel().asFile().getFreeSpace():0;
+    }
+
+    @Override
+    public long getTotalSpace() {
+        return (isMount())?asFileModel().asFile().getTotalSpace():0;
+    }
+
     public void merge(StorageModelImpl storageModel) {
         this.type = storageModel.type;
         this.mntFile = storageModel.mntFile;

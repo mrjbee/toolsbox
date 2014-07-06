@@ -1,15 +1,18 @@
 package org.monroe.team.toolsbox.services;
 
+import org.osgi.util.measurement.Unit;
+
 import java.text.DecimalFormat;
 
 public class Files {
 
-
+    public static final Units[] UNITS = {Units.Gigabyte,Units.Megabyte,Units.Kilobyte,Units.Byte};
     public static enum Units{
 
-        Kilobyte(1024, "kB"),
+        Kilobyte(1024, "KB"),
         Byte(1, "B"),
-        Megabyte(1024*1024, "mB");
+        Megabyte(1024*1024, "MB"),
+        Gigabyte(1024*1024*1024, "GB");
 
         private final double byteInOneUnit;
         private final String ext;
@@ -36,7 +39,6 @@ public class Files {
          return unit.toBytes(size);
     }
 
-
     public static double convertToUnits(double bytes, Units unit){
         return unit.fromBytes(bytes);
     }
@@ -46,4 +48,12 @@ public class Files {
         return new DecimalFormat("##.##").format(answer) + " " + unit.getExt();
     }
 
+    public static String convertToBestUnitsAsString(long bytes) {
+        for (Units probeUnit : UNITS) {
+            if(convertToUnits(bytes,probeUnit)>=1){
+                return convertToUnitsAsString(bytes, probeUnit);
+            }
+        }
+        return convertToUnitsAsString(bytes, Units.Megabyte);
+    }
 }
