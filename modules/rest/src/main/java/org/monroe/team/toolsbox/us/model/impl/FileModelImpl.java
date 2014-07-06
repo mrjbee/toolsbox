@@ -9,7 +9,7 @@ import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.StorageModel;
 import org.monroe.team.toolsbox.us.model.impl.dependecy.Dependency;
 
-import java.io.File;
+import java.io.*;
 import java.util.List;
 
 public class FileModelImpl implements FileModel{
@@ -107,6 +107,50 @@ public class FileModelImpl implements FileModel{
         return storageModelDependency.get();
     }
 
+    @Override
+    public FileModel createFile(String simpleName) {
+        check(isHealthy());
+        return fileManager.mergeByFile(createLocalFileWithName(simpleName),storageModelDependency.get());
+    }
+
+    @Override
+    public void remove() throws IOException {
+        check(isHealthy());
+        if (!asFile().delete()){
+            throw new IOException("File could`n be deleted. = "+asFile().getAbsolutePath());
+        }
+    }
+
+    @Override
+    public OutputStream openWriteStream() throws IOException {
+        return new FileOutputStream(asFile());
+    }
+
+    @Override
+    public InputStream openReadStream() throws IOException {
+        return new FileInputStream(asFile());
+    }
+
+    @Override
+    public void closeStream(InputStream is) throws IOException {
+        if (is == null) return;
+        is.close();
+    }
+
+    @Override
+    public void closeStream(OutputStream is) throws IOException {
+        if (is == null) return;
+        is.close();
+    }
+
+    @Override
+    public long getByteSize() {
+        return asFile().length();
+    }
+
+    private File createLocalFileWithName(String simpleName) {
+        return new File(asFile(), simpleName);
+    }
 
     private boolean isExists(FileRequest request) {
         if (!isStorageMounted()) return false;
@@ -136,4 +180,5 @@ public class FileModelImpl implements FileModel{
     private class FileRequest{
         public File file;
     }
+
 }

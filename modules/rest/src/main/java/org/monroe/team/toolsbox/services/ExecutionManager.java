@@ -8,6 +8,7 @@ public interface ExecutionManager {
 
     void executeAsCopyTask(TaskModel taskModel, boolean restart) throws ExecutionUnavailableException;
     Execution getTaskExecution(Integer taskId);
+
     public static class ExecutionUnavailableException extends Exception {
 
         public final Reason reason;
@@ -19,7 +20,10 @@ public interface ExecutionManager {
 
         public static enum Reason {
 
-            device_is_busy("All threads are busy"), no_file("No file available");
+            device_is_busy("All threads are busy"),
+            no_file("No file available"),
+            file_exists("File Already Exists"),
+            execution("Error during execution");
 
             public final String humanDescription;
 

@@ -1,15 +1,20 @@
 package org.monroe.team.toolsbox.services.impl;
 
 import com.google.common.base.Function;
+import org.apache.logging.log4j.Logger;
 import org.monroe.team.toolsbox.entities.Execution;
-import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.ExecutionManager;
+import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.StorageModel;
 import org.monroe.team.toolsbox.us.model.TaskModel;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.inject.Named;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -24,14 +29,17 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private Map <Integer, Integer> readThreadsPerDeviceMap = new HashMap<Integer, Integer>();
     private Map <Integer, Integer> writeThreadsPerDeviceMap = new HashMap<Integer, Integer>();
 
+    @Resource(name="task") Logger taskLog;
+    @Resource(name="core") Logger logCore;
+
     @PreDestroy
     public void shutdown(){
-        Logs.core.info("Execution manager graceful shutdown started.");
+        logCore.info("Execution manager graceful shutdown started.");
         executorService.shutdownNow();
         try {
             executorService.awaitTermination(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            Logs.core.warn("Execution manager graceful shutdown was interrupted.", e);
+            logCore.warn("Execution manager graceful shutdown was interrupted.", e);
         }
     }
 
@@ -57,12 +65,15 @@ public class ExecutionManagerImpl implements ExecutionManager{
         final BaseExecution execution = new CopyExecution(new Function<Void, Void>() {
             @Override
             public Void apply(Void input) {
+                taskLog.info("Free resources for task = {}", taskModel.getRef());
                 freeThreads(readDeviceId, writeDeviceId);
                 currentExecutionsMap.remove(taskModel.getRef());
                 return null;
             }
-        },taskModel, !restart);
+        },taskModel, !restart, taskLog);
+        taskLog.info("Capture resources for task = {}", taskModel.getRef());
         captureThreads(readDeviceId, writeDeviceId);
+        execution.initialize();
         currentExecutionsMap.put(taskModel.getRef(),execution);
         taskModel.updateStatus(TaskModel.ExecutionStatus.Progress);
         executorService.execute(execution);
@@ -102,39 +113,109 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     private static class CopyExecution extends BaseExecution {
 
-        private CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun) {
-            super(postExecutionAction,task, isCleanRun);
+        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(4, Files.Units.Kilobyte);
+
+        private FileModel srcFile;
+        private FileModel dstFolder;
+        private FileModel dstFile;
+        private InputStream is;
+        private OutputStream os;
+        private long fileSize = 0;
+        private byte[] buffer = new byte[DEFAULT_CHUNK_SIZE];
+
+
+        private CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun, Logger log) {
+            super(postExecutionAction,task, isCleanRun, log);
         }
 
         @Override
-        protected void cleanupPreviousExecution() {
+        public void initialize() throws ExecutionUnavailableException {
+            srcFile = getTask().getProperty("src", FileModel.class);
+            dstFolder = getTask().getProperty("dst", FileModel.class);
+            dstFile = dstFolder.createFile(srcFile.getSimpleName());
+        }
 
+        @Override
+        protected void cleanupPreviousExecution(){
+            if (dstFile.isExistsLocally()){
+                try {
+                    dstFile.remove();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+
+        @Override
+        protected boolean rollbackAndReleaseResources() throws ExecutionUnavailableException {
+            releaseResources();
+            cleanupPreviousExecution();
+            return true;
         }
 
         @Override
         protected void allocateResources() throws ExecutionUnavailableException {
 
-        }
-
-        @Override
-        protected void releaseResources() {
-
-        }
-
-        @Override
-        protected int getStepCount() {
-            return 10;
-        }
-
-        @Override
-        protected void execute(int i, int stepCount) {
+            if (dstFile.isExistsLocally()){
+                throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
+            }
+            ExecutionUnavailableException errors = new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
+            boolean doThrow = false;
             try {
-                if (i == 5 && getTask().getRef()%3 == 0){
-                    throw new IllegalStateException("Something wrong");
-                }
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                //nothing here
+                os = dstFile.openWriteStream();
+            } catch (IOException e) {
+                log.warn("[Task ="+getTask().getRef()+"] Error during allocating resources",e);
+                doThrow = true;
+            }
+
+            try {
+                is = srcFile.openReadStream();
+            } catch (IOException e) {
+                log.warn("[Task ="+getTask().getRef()+"] Error during allocating resources",e);
+                doThrow = true;
+            }
+
+            if(doThrow) throw errors;
+            fileSize = srcFile.getByteSize();
+        }
+
+
+        @Override
+        protected void releaseResources() throws ExecutionUnavailableException {
+            ExecutionUnavailableException errors = new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
+            boolean doThrow =false;
+            try {
+                srcFile.closeStream(os);
+            } catch (IOException e) {
+                log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
+                doThrow =true;
+            }
+            try {
+                dstFile.closeStream(is);
+            } catch (IOException e) {
+                log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
+                doThrow =true;
+            }
+            if(doThrow) throw errors;
+        }
+
+        @Override
+        protected long getStepCount() {
+            if (fileSize % DEFAULT_CHUNK_SIZE!=0) {
+                return fileSize / DEFAULT_CHUNK_SIZE + 1;
+            } else {
+                return fileSize / DEFAULT_CHUNK_SIZE;
+            }
+        }
+
+        @Override
+        protected void execute(long step, long stepCount) {
+            try {
+                int readCount = is.read(buffer, 0, buffer.length);
+                if (readCount < 0) throw new RuntimeException("Unexpected read count = " + readCount +" during step = "+step);
+                os.write(buffer,0,readCount);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -147,11 +228,13 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private Map<String,String> statisticMap = new HashMap<String, String>();
         private Float progress = 0f;
         private final boolean cleanRun;
+        protected final Logger log;
 
-        private BaseExecution(Function<Void, Void> onFinish, TaskModel task, boolean cleanRun) {
+        private BaseExecution(Function<Void, Void> onFinish, TaskModel task, boolean cleanRun, Logger log) {
             this.task = task;
             this.onFinish = onFinish;
             this.cleanRun = cleanRun;
+            this.log = log;
         }
 
         @Override
@@ -169,32 +252,39 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         public void run() {
+            log.info("[Task = {}] Execution started ... ", task.getRef());
             try {
                 if(!cleanRun){
+                    log.info("[Task = {}] Requested cleanup before execution task", task.getRef());
                     cleanupPreviousExecution();
                 }
+                log.info("[Task = {}] Allocate resources", task.getRef());
                 allocateResources();
-                int stepCount = getStepCount();
-                for (int i=0;i<stepCount;i++){
+                long stepCount = getStepCount();
+                for (long i=0;i<stepCount;i++){
+                    log.debug("[Task = {}] Executing step {} of {} ...", task.getRef(), i, stepCount);
                     execute(i,stepCount);
-                    float currentProgress = ((float)stepCount) / 100 * ((float)i+1);
+                    float currentProgress = 1 / ((float)stepCount) * ((float)i+1);
                     setProgress(currentProgress);
                     if (Thread.currentThread().isInterrupted()){
+                        log.warn("[Task = {}] was interrupted ...", task.getRef());
                         task.updateStatus(TaskModel.ExecutionStatus.Fails);
                         break;
                     }
                 }
+                log.info("[Task = {}] Execution done. Releasing resources", task.getRef());
                 releaseResources();
                 task.updateStatus(TaskModel.ExecutionStatus.Finished);
             } catch (Exception e) {
-                Logs.core.warn("Exception during execution task = "+task.getRef(), e);
+                log.warn("[Task = "+task.getRef()+"] Exception during execution task. ", e);
                 try {
+                    log.info("[Task = {}] Rollback and release resources", task.getRef());
                     if (rollbackAndReleaseResources()){
                         releaseResources();
                     }
                     task.updateStatus(TaskModel.ExecutionStatus.Fails);
                 } catch (Exception rollbackException){
-                    Logs.core.warn("Exception during rollback task = "+task.getRef(), rollbackException);
+                    log.warn("[Task = "+task.getRef()+"] Exception during rollback. ", e);
                 }
             }
             onFinish.apply(null);
@@ -213,14 +303,15 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected abstract void allocateResources() throws ExecutionUnavailableException;
 
-        protected abstract void releaseResources();
+        protected abstract void releaseResources() throws ExecutionUnavailableException;
 
-        protected boolean rollbackAndReleaseResources(){return false;};
+        protected boolean rollbackAndReleaseResources() throws ExecutionUnavailableException {return false;}
 
-        protected abstract int getStepCount();
+        protected abstract long getStepCount();
 
-        protected abstract void execute(int i, int stepCount);
+        protected abstract void execute(long step, long stepCount);
 
+        public abstract void initialize() throws ExecutionUnavailableException;
     }
 
 }
