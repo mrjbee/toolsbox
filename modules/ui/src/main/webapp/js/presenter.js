@@ -148,6 +148,7 @@ var PresenterPrototype = {
                             transition: "slideup"
                         });
                     }.bind(me));
+                liEl.append('<p class="ui-li-aside">'+itFile.size+'</p>');
                 return liEl;
             }
         },{
@@ -199,7 +200,11 @@ var PresenterPrototype = {
                 return liEl;
             },
             renderFile : function (itFile) {
-                return null;
+                var liEl;
+                liEl = $(document.createElement("li"));
+                liEl.append(itFile.name);
+                liEl.append('<p class="ui-li-aside">'+itFile.size+'</p>');
+                return liEl;
             }
         },{
             getRoots : function (doOnDone) {

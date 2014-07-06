@@ -146,7 +146,7 @@ public class FileModelImpl implements FileModel{
 
     @Override
     public long getByteSize() {
-        return asFile().length();
+        return (isDirectory())?0:asFile().length();
     }
 
     private File createLocalFileWithName(String simpleName) {

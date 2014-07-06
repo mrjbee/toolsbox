@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
 import org.monroe.team.toolsbox.services.FileManager;
+import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.services.IdTranslator;
 import org.monroe.team.toolsbox.us.common.Exceptions;
 import org.monroe.team.toolsbox.us.common.FileResponse;
@@ -50,8 +51,11 @@ public class GetFileChildren implements GetFileChildrenDefinition{
                     public FileResponse apply(FileModel fileModel) {
                         if (fileModel.isHidden()) return null;
                         String fileName = fileModel.getSimpleName();
-                        FileResponse fileResponse = new FileResponse(fileModel.getRef(), fileName,
-                                fileModel.isDirectory());
+                        FileResponse fileResponse = new FileResponse(
+                                fileModel.getRef(),
+                                fileName,
+                                fileModel.isDirectory(),
+                                Files.convertToUnitsAsString(fileModel.getByteSize(), Files.Units.Megabyte));
                         return fileResponse;
                     }
                 }), new Predicate<FileResponse>() {
@@ -66,7 +70,8 @@ public class GetFileChildren implements GetFileChildrenDefinition{
             list.add(new FileResponse(
                     parentFile.getParent().getRef(),
                     "..",
-                    true));
+                    true,
+                    Files.convertToUnitsAsString(0, Files.Units.Megabyte)));
         }
 
         Collections.sort(list, new Comparator<FileResponse>() {
