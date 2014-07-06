@@ -4,13 +4,13 @@
     <Appenders>
 
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n "/>
         </Console>
 
         <RollingFile name="FRAMEWORKS"
                      fileName="logs/framework.log"
                      filePattern="logs/framework-%i.log">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
             </Policies>
@@ -20,7 +20,7 @@
         <RollingFile name="CORE"
                      fileName="logs/core.log"
                      filePattern="logs/core-%i.log">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
             </Policies>
@@ -29,7 +29,7 @@
         <RollingFile name="FEATURE"
                      fileName="logs/feature.log"
                      filePattern="logs/feature-%i.log">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
             </Policies>
