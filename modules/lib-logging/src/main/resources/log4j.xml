@@ -60,7 +60,7 @@
             <appender-ref ref="FRAMEWORKS"/>
         </logger>
 -->
-        <Root level="WARN">
+        <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>

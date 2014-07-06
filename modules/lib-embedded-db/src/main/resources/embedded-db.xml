@@ -26,7 +26,7 @@
 
 
     <bean id="hibernateJpaAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-        <property name="showSql" value="true" />
+        <property name="showSql" value="false" />
     </bean>
 
     <jpa:repositories base-package="org.monroe.team.toolsbox.repositories" transaction-manager-ref="txManager"/>
