@@ -37,8 +37,13 @@ public class InMemoryStorageManager implements StorageManager {
         String label = properties.getProperty("label", null);
         Assert.notNull(label);
         StorageModelImpl storageModel = new StorageModelImpl(label, type, configFile);
-        fileManager.linkStorage(storageModel);
-        storageMap.put(storageModel.getIdAsString(), storageModel);
+        if (storageMap.get(storageModel.getIdAsString())!= null){
+            ((StorageModelImpl)storageMap.get(storageModel.getIdAsString())).merge(storageModel);
+            storageModel = (StorageModelImpl) storageMap.get(storageModel.getIdAsString());
+        } else {
+            fileManager.linkStorage(storageModel);
+            storageMap.put(storageModel.getIdAsString(), storageModel);
+        }
         return storageModel;
     }
 

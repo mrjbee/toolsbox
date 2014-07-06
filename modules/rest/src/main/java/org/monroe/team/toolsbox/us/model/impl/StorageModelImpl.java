@@ -1,9 +1,13 @@
 package org.monroe.team.toolsbox.us.model.impl;
 
+import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.StorageModel;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StorageModelImpl implements StorageModel {
 
@@ -12,6 +16,7 @@ public class StorageModelImpl implements StorageModel {
     private FileModel root;
     private File mntFile;
     private File checkFile;
+    private final List<Double> lastSpeedList = new ArrayList<Double>(5);
 
     public StorageModelImpl(String label, StorageType type, File checkFile) {
         this.label = label;
@@ -84,5 +89,37 @@ public class StorageModelImpl implements StorageModel {
     @Override
     public int getMaxReadThreadsCount() {
         return getType().equals(StorageType.PERMANENT)?4:2;
+    }
+
+    @Override
+    public synchronized double getSpeed() {
+        if (lastSpeedList.isEmpty()) return 0;
+        double averageSpeed = 0;
+        for (Double speed : lastSpeedList) {
+            averageSpeed += speed;
+        }
+        return averageSpeed/ lastSpeedList.size();
+    }
+
+    @Override
+    public synchronized void setSpeed(double speed) {
+        lastSpeedList.add(speed);
+        if (lastSpeedList.size() > 5){
+            lastSpeedList.remove(0);
+        }
+    }
+
+    @Override
+    public String getSpeedAsString() {
+        if (getSpeed() == 0) return "Undefined";
+        double bytesInMs = getSpeed();
+        double mByteInMin = bytesInMs * Files.convertFromUnits(1, Files.Units.Megabyte) / (1000 * 60);
+        return new DecimalFormat("##.##").format(mByteInMin)+" mb/min";
+    }
+
+    public void merge(StorageModelImpl storageModel) {
+        this.type = storageModel.type;
+        this.mntFile = storageModel.mntFile;
+        this.checkFile = storageModel.checkFile;
     }
 }

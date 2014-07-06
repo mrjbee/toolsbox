@@ -28,6 +28,8 @@ public interface TaskModel {
 
     boolean isHardInterrupted();
 
+    String getEstimationDateString();
+
     public static enum Type{
         COPY, TRANSFER, DELETE
     }

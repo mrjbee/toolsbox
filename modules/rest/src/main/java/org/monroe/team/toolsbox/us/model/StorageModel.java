@@ -2,6 +2,7 @@ package org.monroe.team.toolsbox.us.model;
 
 
 import org.monroe.team.toolsbox.us.model.impl.FileModelImpl;
+import org.monroe.team.toolsbox.us.model.impl.StorageModelImpl;
 
 public interface StorageModel {
 
@@ -21,6 +22,11 @@ public interface StorageModel {
 
     int getMaxReadThreadsCount();
 
+    double getSpeed();
+
+    void setSpeed(double speed);
+
+    String getSpeedAsString();
 
     public static enum StorageType{
         PORTABLE, PERMANENT;

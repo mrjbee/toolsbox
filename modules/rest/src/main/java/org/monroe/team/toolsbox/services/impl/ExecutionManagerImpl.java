@@ -113,7 +113,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     private static class CopyExecution extends BaseExecution {
 
-        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(4, Files.Units.Kilobyte);
+        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(8, Files.Units.Kilobyte);
 
         private FileModel srcFile;
         private FileModel dstFolder;
@@ -121,6 +121,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private InputStream is;
         private OutputStream os;
         private long fileSize = 0;
+        private long startTime = 0;
         private byte[] buffer = new byte[DEFAULT_CHUNK_SIZE];
 
 
@@ -188,7 +189,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 srcFile.closeStream(os);
             } catch (IOException e) {
                 log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                doThrow =true;
+                doThrow = true;
             }
             try {
                 dstFile.closeStream(is);
@@ -200,7 +201,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        protected long getStepCount() {
+        protected long getApproximatelyStepCount() {
             if (fileSize % DEFAULT_CHUNK_SIZE!=0) {
                 return fileSize / DEFAULT_CHUNK_SIZE + 1;
             } else {
@@ -209,14 +210,26 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        protected void execute(long step, long stepCount) {
+        protected boolean execute(long step, long stepCount) {
+            if (step == 0){
+                startTime = System.currentTimeMillis();
+            }
             try {
                 int readCount = is.read(buffer, 0, buffer.length);
-                if (readCount < 0) throw new RuntimeException("Unexpected read count = " + readCount +" during step = "+step);
+                if (readCount < 0)
+                    return true;
                 os.write(buffer,0,readCount);
+                double stepTime = (double)(System.currentTimeMillis() - startTime)/(double)(step+1);
+                if (stepTime == 0) stepTime=0.1;
+                dstFile.getStorage().setSpeed((double)readCount/stepTime);
+                double speed = dstFile.getStorage().getSpeed();
+                long endTime = Math.round(stepTime * (stepCount - (step + 1)));
+                //log.info("End time = " + endTime +" "+speed+" step time:"+stepTime);
+                publishStatistic("end_time", endTime);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            return false;
         }
 
     }
@@ -225,7 +238,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         private final TaskModel task;
         private final Function<Void,Void> onFinish;
-        private Map<String,String> statisticMap = new HashMap<String, String>();
+        private Map<String,Object> statisticMap = new HashMap<String, Object>();
         private Float progress = 0f;
         private final boolean cleanRun;
         protected final Logger log;
@@ -260,17 +273,23 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 }
                 log.info("[Task = {}] Allocate resources", task.getRef());
                 allocateResources();
-                long stepCount = getStepCount();
-                for (long i=0;i<stepCount;i++){
-                    log.debug("[Task = {}] Executing step {} of {} ...", task.getRef(), i, stepCount);
-                    execute(i,stepCount);
-                    float currentProgress = 1 / ((float)stepCount) * ((float)i+1);
+                long stepCount = getApproximatelyStepCount()+1;
+                boolean finished = false; long currentStep=0;
+                while(!finished){
+                    log.debug("[Task = {}] Executing step {} of {} ...", task.getRef(), currentStep, stepCount);
+                    finished = execute(currentStep,stepCount);
+                    float currentProgress = 1 / ((float)stepCount) * ((float)currentStep+1);
                     setProgress(currentProgress);
                     if (Thread.currentThread().isInterrupted()){
                         log.warn("[Task = {}] was interrupted ...", task.getRef());
                         task.updateStatus(TaskModel.ExecutionStatus.Fails);
                         break;
                     }
+                    if (currentStep>=stepCount){
+                        stepCount++;
+                        log.warn("[Task = {}] increasing step count ...", task.getRef());
+                    }
+                    currentStep++;
                 }
                 log.info("[Task = {}] Execution done. Releasing resources", task.getRef());
                 releaseResources();
@@ -292,12 +311,12 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected abstract void cleanupPreviousExecution();
 
-        final public synchronized void publishStatistic(String key,String value){
+        final public synchronized void publishStatistic(String key,Object value){
             statisticMap.put(key, value);
         }
 
         @Override
-        public synchronized String getStatistic(String key) {
+        public synchronized Object getStatistic(String key) {
             return statisticMap.get(key);
         }
 
@@ -307,9 +326,9 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected boolean rollbackAndReleaseResources() throws ExecutionUnavailableException {return false;}
 
-        protected abstract long getStepCount();
+        protected abstract long getApproximatelyStepCount();
 
-        protected abstract void execute(long step, long stepCount);
+        protected abstract boolean execute(long step, long stepCount);
 
         public abstract void initialize() throws ExecutionUnavailableException;
     }

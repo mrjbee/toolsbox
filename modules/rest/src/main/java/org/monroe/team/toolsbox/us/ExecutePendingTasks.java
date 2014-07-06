@@ -29,7 +29,7 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
     public void perform() {
         List<TaskModel> tasks = manager.fetchAll();
 
-        coreLog.info("Fetching tasks. Total count:"+tasks.size());
+        coreLog.info("Fetching tasks. Total count:" + tasks.size());
         for(TaskModel task:tasks){
             coreLog.debug("Processing task. task:" + task);
             if (task.isHardInterrupted()){
@@ -48,8 +48,10 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
                         task.execute();
                     } catch (ExecutionManager.ExecutionUnavailableException e) {
                         log.info("[Task = " + task.getRef()+"] Tasks execution unavailable.", e);
+                        task.updateStatus(TaskModel.ExecutionStatus.Fails);
                     } catch (Exception e){
                         log.warn("[Task = " + task.getRef() + "] Fails! Scheduling pending task.", e);
+                        task.updateStatus(TaskModel.ExecutionStatus.Fails);
                     }
                 }
             }

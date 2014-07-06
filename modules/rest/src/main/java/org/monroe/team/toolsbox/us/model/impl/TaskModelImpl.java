@@ -128,6 +128,43 @@ public class TaskModelImpl implements TaskModel {
         return getStatus().equals(ExecutionStatus.Progress) && !executionDependency.exists();
     }
 
+    @Override
+    public String getEstimationDateString() {
+        long msCount = 0;
+
+        if (executionDependency.exists()){
+            Long ms = (Long) executionDependency.get().getStatistic("end_time");
+            if (ms != null){
+                msCount = ms;
+            }
+        }
+
+        if (msCount == 0){
+            double speed = getProperty("dst",FileModel.class).getStorage().getSpeed();
+            long size = getProperty("src",FileModel.class).getByteSize();
+            if (speed == 0) return "NaN";
+            msCount = Math.round(size/speed);
+        }
+
+        StringBuffer result = new StringBuffer();
+        long hr =0, min =0, sec =0;
+        if (msCount/(1000*60*60) != 0){
+            hr = msCount/(1000*60*60);
+            msCount = msCount%(1000*60*60);
+        }
+        if (msCount/(1000*60) != 0){
+            min = msCount/(1000*60);
+            msCount = msCount%(1000*60);
+        }
+        if (msCount/(1000) != 0){
+            sec = msCount/(1000);
+        }
+        if (hr != 0) result.append(hr+" hr ");
+        result.append(min+" min ");
+        result.append(sec+" sec");
+        return result.toString();
+    }
+
     private void check(boolean condition) {
         if (!condition){
             throw new IllegalStateException();

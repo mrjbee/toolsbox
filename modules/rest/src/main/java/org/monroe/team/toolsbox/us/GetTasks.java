@@ -3,12 +3,15 @@ package org.monroe.team.toolsbox.us;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.apache.logging.log4j.Logger;
+import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.TaskModel;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
@@ -23,6 +26,9 @@ public class GetTasks implements GetTasksDefinition{
     @Inject
     FileManager fileManager;
 
+    @Resource(name = "task")
+    Logger log;
+
     @Override
     public List<TaskResponse> perform() {
         List<TaskModel> taskList = taskManager.fetchAll();
@@ -33,7 +39,7 @@ public class GetTasks implements GetTasksDefinition{
                         task.getRef(),
                         task.getStatusAsString(),
                         task.getTypeAsString(),
-                        null,
+                        task.getEstimationDateString(),
                         task.getExecutionProgress());
 
                 switch (task.getType()){
@@ -42,10 +48,16 @@ public class GetTasks implements GetTasksDefinition{
                         Integer dstFileId = task.getProperty("dst", Integer.class);
                         FileModel srcFile = fileManager.getById(srcFileId);
                         FileModel dstFile = fileManager.getById(dstFileId);
-
                         if (srcFile !=null && dstFile != null) {
                             taskResponse.with("src", srcFile.getSimpleName())
-                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
+                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName())
+                                    .with("speed", dstFile.getStorage().getSpeedAsString());
+
+                            log.info("[Task = {}] Speed {}, Estimation time {}",
+                                    task.getRef(),
+                                    dstFile.getStorage().getSpeedAsString(),
+                                    task.getEstimationDateString());
+
                         } else {
                             taskResponse.with("src", "NaN")
                                     .with("dst","NaN");

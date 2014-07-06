@@ -90,7 +90,8 @@ public class FileModelImpl implements FileModel{
 
     @Override
     public File asFile() {
-        check(isHealthy());
+        check(storageModelDependency.exists());
+        check(fileDescriptionDependency.exists());
         return new File(getPath());
     }
 
