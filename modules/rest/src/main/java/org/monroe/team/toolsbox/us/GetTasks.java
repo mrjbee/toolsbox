@@ -52,12 +52,6 @@ public class GetTasks implements GetTasksDefinition{
                             taskResponse.with("src", srcFile.getSimpleName())
                                     .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName())
                                     .with("speed", dstFile.getStorage().getSpeedAsString());
-
-                            log.info("[Task = {}] Speed {}, Estimation time {}",
-                                    task.getRef(),
-                                    dstFile.getStorage().getSpeedAsString(),
-                                    task.getEstimationDateString());
-
                         } else {
                             taskResponse.with("src", "NaN")
                                     .with("dst","NaN");

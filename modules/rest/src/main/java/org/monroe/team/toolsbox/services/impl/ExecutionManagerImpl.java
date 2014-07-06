@@ -55,7 +55,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         if (!srcFile.isExistsLocally() || !dstFile.isExistsLocally()) {
             throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.no_file);
         }
-        if (isDevicesBusyForNewRead(srcFile.getStorage()) && isDevicesBusyForNewWrite(dstFile.getStorage())){
+        if (isDevicesBusyForNewRead(srcFile.getStorage()) || isDevicesBusyForNewWrite(dstFile.getStorage())){
             throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.device_is_busy);
         }
 
@@ -107,22 +107,24 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     private boolean isDeviceBusy(Map<Integer, Integer> existsThreadsPerDeviceMap, int deviceId, int maxAllowedThreadCount) {
         Integer existCount = existsThreadsPerDeviceMap.get(deviceId);
-        return  !(existCount == null || (existCount+1) <= maxAllowedThreadCount);
+        return  (existCount != null && (existCount) >= maxAllowedThreadCount);
     }
 
 
     private static class CopyExecution extends BaseExecution {
 
-        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(8, Files.Units.Kilobyte);
+        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(4, Files.Units.Kilobyte);
 
         private FileModel srcFile;
         private FileModel dstFolder;
         private FileModel dstFile;
         private InputStream is;
         private OutputStream os;
-        private long fileSize = 0;
+        private long fileSizeByteCount = 0;
         private long startTime = 0;
-        private byte[] buffer = new byte[DEFAULT_CHUNK_SIZE];
+        private long processedByteCount = 0;
+        private byte[] buffer = null;
+        private long estimationTimeBuffer = 0;
 
 
         private CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun, Logger log) {
@@ -156,7 +158,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected void allocateResources() throws ExecutionUnavailableException {
-
+            buffer = new byte[DEFAULT_CHUNK_SIZE];
             if (dstFile.isExistsLocally()){
                 throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
             }
@@ -177,12 +179,13 @@ public class ExecutionManagerImpl implements ExecutionManager{
             }
 
             if(doThrow) throw errors;
-            fileSize = srcFile.getByteSize();
+            fileSizeByteCount = srcFile.getByteSize();
         }
 
 
         @Override
         protected void releaseResources() throws ExecutionUnavailableException {
+            buffer = null;
             ExecutionUnavailableException errors = new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
             boolean doThrow =false;
             try {
@@ -202,30 +205,34 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected long getApproximatelyStepCount() {
-            if (fileSize % DEFAULT_CHUNK_SIZE!=0) {
-                return fileSize / DEFAULT_CHUNK_SIZE + 1;
+            if (fileSizeByteCount % DEFAULT_CHUNK_SIZE!=0) {
+                return fileSizeByteCount / DEFAULT_CHUNK_SIZE + 1;
             } else {
-                return fileSize / DEFAULT_CHUNK_SIZE;
+                return fileSizeByteCount / DEFAULT_CHUNK_SIZE;
             }
         }
 
         @Override
         protected boolean execute(long step, long stepCount) {
-            if (step == 0){
-                startTime = System.currentTimeMillis();
-            }
             try {
                 int readCount = is.read(buffer, 0, buffer.length);
                 if (readCount < 0)
                     return true;
                 os.write(buffer,0,readCount);
-                double stepTime = (double)(System.currentTimeMillis() - startTime)/(double)(step+1);
-                if (stepTime == 0) stepTime=0.1;
-                dstFile.getStorage().setSpeed((double)readCount/stepTime);
-                double speed = dstFile.getStorage().getSpeed();
-                long endTime = Math.round(stepTime * (stepCount - (step + 1)));
-                //log.info("End time = " + endTime +" "+speed+" step time:"+stepTime);
-                publishStatistic("end_time", endTime);
+                processedByteCount+=readCount;
+                estimationTimeBuffer +=readCount;
+                if (step % 2000 == 0){
+                    if (startTime != 0) {
+                        double timeDelta = (double)(System.currentTimeMillis() - startTime);
+                        if(timeDelta == 0) timeDelta = 1000;
+                        double speed = (double)estimationTimeBuffer / (double)timeDelta;
+                        dstFile.getStorage().setSpeed(speed);
+                        long endTime = Math.round((fileSizeByteCount - processedByteCount)/dstFile.getStorage().getSpeed());
+                        publishStatistic("end_time", endTime);
+                    }
+                    startTime = System.currentTimeMillis();
+                    estimationTimeBuffer = 0;
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

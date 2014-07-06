@@ -83,12 +83,12 @@ public class StorageModelImpl implements StorageModel {
 
     @Override
     public int getMaxWriteThreadsCount() {
-        return getType().equals(StorageType.PERMANENT)?2:1;
+        return getType().equals(StorageType.PERMANENT)?1:1;
     }
 
     @Override
     public int getMaxReadThreadsCount() {
-        return getType().equals(StorageType.PERMANENT)?4:2;
+        return getType().equals(StorageType.PERMANENT)?2:1;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class StorageModelImpl implements StorageModel {
     public synchronized void setSpeed(double speed) {
         lastSpeedList.add(speed);
         if (lastSpeedList.size() > 5){
-            lastSpeedList.remove(0);
+            lastSpeedList.remove((int)0);
         }
     }
 
@@ -113,8 +113,8 @@ public class StorageModelImpl implements StorageModel {
     public String getSpeedAsString() {
         if (getSpeed() == 0) return "Undefined";
         double bytesInMs = getSpeed();
-        double mByteInMin = bytesInMs * Files.convertFromUnits(1, Files.Units.Megabyte) / (1000 * 60);
-        return new DecimalFormat("##.##").format(mByteInMin)+" mb/min";
+        double mByteInMin = bytesInMs * 1000 / Files.convertFromUnits(1, Files.Units.Megabyte);
+        return new DecimalFormat("##.##").format(mByteInMin)+" mb/sec";
     }
 
     public void merge(StorageModelImpl storageModel) {

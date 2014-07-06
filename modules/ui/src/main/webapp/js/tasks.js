@@ -20,6 +20,8 @@ var CopyTaskWidgetPrototype = {
     _statusLabel:null,
     _estimationLabel:null,
     _speedLabel:null,
+    _footer:null,
+    _header:null,
 
     constructor : function(taskToRef){
         this._task = taskToRef;
@@ -37,17 +39,25 @@ var CopyTaskWidgetPrototype = {
         this._content.css("display","none");
         container.append(this._content);
         this._render();
-        this.update(this._task);
+        this.update(this._task, true);
         this._content.fadeIn();
     },
 
-    update: function(task){
+    update: function(task, firstTime){
         this._task = task;
         this._statusLabel.text(this._task.status);
-        this._speedLabel.text("NaN");
-        this._estimationLabel.text("NaN");
+        this._speedLabel.text(this._task.details.speed);
+        this._estimationLabel.text(this._task.endDate);
         this._progressbar.val(Math.round(this._task.progress*100));
         this._progressbar.slider("refresh");
+        if (this._task.status != "Fails") {
+            this._progressbar.parent().find('.ui-state-disabled').removeClass('ui-state-disabled');
+        }
+        if (this._task.status == "Finished" && !firstTime){
+            this._footer.slideUp();
+            this._header.slideUp();
+        }
+
     },
 
     _render: function () {
@@ -57,9 +67,9 @@ var CopyTaskWidgetPrototype = {
         this._content.addClass("ui-body-a");
 
 
-        var header = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-header");
+        this._header = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-header");
         var body = $(document.createElement("div")).addClass("ui-body").addClass("ui-body-a").addClass("task-body");
-        var footer = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-footer");
+        this._footer = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-footer");
         var filedset = $(document.createElement("fieldset")).addClass("progress-bar");
         this._progressbar = $(document.createElement("input"))
             .attr("name","slider-2")
@@ -71,18 +81,18 @@ var CopyTaskWidgetPrototype = {
             .attr("data-mini","true")
             .attr("disabled","true");
         var caption =  $(document.createElement("label"));
-        caption.append("Copy");
+        caption.append("");
         filedset.append(caption);
         filedset.append(this._progressbar);
-        header.append(filedset);
-        body.append("<span class='raw-data'>"+this._task.details["src"]+"</span> in to <span class='raw-data'>"+this._task.details["dst"]+"</span>");
+        this._header.append(filedset);
+        body.append("<b>Copy</b> <span class='raw-data'>"+this._task.details["src"]+"</span> in to <span class='raw-data'>"+this._task.details["dst"]+"</span>");
 
         var statusLabel = $(document.createElement("label"));
         this._statusLabel = $(document.createElement("span")).addClass("raw-data");
         this._speedLabel = $(document.createElement("span")).addClass("raw-data");
         this._estimationLabel = $(document.createElement("span")).addClass("raw-data");
 
-        footer.append(statusLabel);
+        this._footer.append(statusLabel);
         statusLabel.append("Status");
         statusLabel.append(this._statusLabel);
         statusLabel.append("Estimation");
@@ -90,9 +100,9 @@ var CopyTaskWidgetPrototype = {
         statusLabel.append("Speed");
         statusLabel.append(this._speedLabel);
 
-        this._content.append(header);
+        this._content.append(this._header);
         this._content.append(body);
-        this._content.append(footer);
+        this._content.append(this._footer);
         this._progressbar.slider();
         this._progressbar.parent().find('.ui-state-disabled').removeClass('ui-state-disabled');
     }

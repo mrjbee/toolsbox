@@ -47,11 +47,9 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
                         log.info("[Task = {} ] Scheduling pending task",task.getRef());
                         task.execute();
                     } catch (ExecutionManager.ExecutionUnavailableException e) {
-                        log.info("[Task = " + task.getRef()+"] Tasks execution unavailable.", e);
-                        task.updateStatus(TaskModel.ExecutionStatus.Fails);
+                        log.info("[Task = " + task.getRef()+"] Tasks execution unavailable. Reason: "+ e.reason);
                     } catch (Exception e){
                         log.warn("[Task = " + task.getRef() + "] Fails! Scheduling pending task.", e);
-                        task.updateStatus(TaskModel.ExecutionStatus.Fails);
                     }
                 }
             }
