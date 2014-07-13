@@ -6,7 +6,7 @@ var ModelPrototype = {
     //_serverUrl : "http://194.29.62.160:8880/remote-control-api/rest",
 
     //Test URl
-    _serverUrl : "http://192.168.0.201:8080/remfly-api/rest",
+    _serverUrl : "http://localhost:8080/remfly-api/rest",
 
     _username : "",
     _password : "",

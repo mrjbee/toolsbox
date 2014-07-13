@@ -61,14 +61,14 @@
     <div role="main" class="ui-content">
         <div class="grid-content ui-grid">
             <div class="top-panel ui-block-a ui-body-a ui-corner-all">
-                <h3 class="ui-bar ui-bar-a ui-corner-all">Storages</h3>
                 <div class="ui-body ui-body-a ui-corner-all">
                     <ul data-role="listview" id="storage-browser-list">
+                        <li data-role="list-divider">Fetching Storages ... </li>
                     </ul>
                 </div>
             </div>
             <div class="top-panel ui-block-b ui-body-a ui-corner-all">
-                <div data-role="tabs" id="tabs" >
+                  <div data-role="tabs" id="tabs" >
                     <div data-role="navbar" id="navbar"  data-iconpos="left">
                         <ul>
                             <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-btn-active " id="file-tab-btn">Files</a></li>
@@ -77,13 +77,18 @@
                     </div>
                     <div id="one">
                         <a href="#" class="ui-btn ui-mini" id="file-browser-top-btn">Back to storage list</a>
-                        <ul data-role="listview" id="file-browser-list">
-                            <li data-role="list-divider">Storages</li>
-                        </ul>
+                        <div class="ui-body ui-body-a ui-corner-all">
+                            <ul data-role="listview" id="file-browser-list">
+                                <li data-role="list-divider">Fetching Storages ... </li>
+                            </ul>
+                        </div>
+
                     </div>
                     <div id="two">
-                        <a href="#" class="ui-btn ui-mini" >Clear</a>
-                        <div id="task-browser-list">
+                        <a href="#" class="ui-btn ui-mini" >Clear History</a>
+                        <div class="ui-body ui-body-a ui-corner-all">
+                            <div id="task-browser-list">
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -278,6 +278,7 @@ var PresenterPrototype = {
                 aEl.click({
                     file:itStorage
                 },function(event){
+                    this._view.filesTabBtn.click();
                    this._rootBrowserView.moveToStorage(event.data.file);
                 }.bind(this));
                 aEl.append('<p>Free space <strong>'+itStorage.freeSpace+'</strong></p>');
