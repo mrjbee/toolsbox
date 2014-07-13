@@ -8,8 +8,8 @@
         </Console>
 
         <RollingFile name="FRAMEWORKS"
-                     fileName="logs/framework.log"
-                     filePattern="logs/framework-%i.log">
+                     fileName="${bundle:Application:app.id}_logs/framework.log"
+                     filePattern="${bundle:Application:app.id}_logs/framework-%i.log">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
@@ -18,8 +18,8 @@
         </RollingFile>
 
         <RollingFile name="CORE"
-                     fileName="logs/core.log"
-                     filePattern="logs/core-%i.log">
+                     fileName="${bundle:Application:app.id}_logs/core.log"
+                     filePattern="${bundle:Application:app.id}_logs/core-%i.log">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
@@ -27,8 +27,8 @@
             <DefaultRolloverStrategy max="5"/>
         </RollingFile>
         <RollingFile name="FEATURE"
-                     fileName="logs/feature.log"
-                     filePattern="logs/feature-%i.log">
+                     fileName="${bundle:Application:app.id}_logs/feature.log"
+                     filePattern="${bundle:Application:app.id}_logs/feature-%i.log">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg %ex %n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="5.000 MB"/>
