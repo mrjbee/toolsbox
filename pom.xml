@@ -41,6 +41,17 @@
         <dependencies>
 
             <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>1.9.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-damapper-asl</artifactId>
+                <version>1.9.10</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.restlet.jee</groupId>
                 <artifactId>org.restlet.ext.spring</artifactId>
                 <version>2.2.1</version>
