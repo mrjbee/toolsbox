@@ -42,7 +42,7 @@ public class GlobalController {
         log.debug("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]");
         checkIfRequiredRethrow(exception);
 
-        if (!request.getContentType().equals("application/json")){
+        if (!"application/json".equals(request.getContentType())){
             servletResponse.sendError(exception.status.value(),exception.label+":"+exception.msg);
             return null;
         } else {
