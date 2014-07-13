@@ -4,6 +4,7 @@ import org.monroe.team.toolsbox.remote.config.us.GetSettingDefinition;
 import org.monroe.team.toolsbox.remote.config.us.SetSettingDefinition;
 import org.monroe.team.toolsbox.remote.config.us.UpdateStatusStatistics;
 import org.monroe.team.toolsbox.remote.config.us.UpdateStatusStatisticsDefinition;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,13 +24,12 @@ public class SettingController {
         try {
             return getSettingDefinition.perform(settingName);
         } catch (GetSettingDefinition.UnsupportedSettingException e) {
-            //TODO: Change exception
-            return null;
+            throw new Exceptions.DetailedRestException(HttpStatus.NOT_FOUND,"not_found", "Unsupported setting "+settingName, e);
         }
     }
 
     @RequestMapping(value = "/server/{serverName}/{settingName}",method = RequestMethod.POST)
-    public @ResponseBody String setValue(@RequestBody final String body, @PathVariable final String settingName, HttpServletResponse response) throws IOException {
+    public @ResponseBody String setValue(@RequestBody final String body, @PathVariable final String settingName) {
         try {
             setSettingDefinition.perform(createSetRequest(body, settingName));
 
@@ -39,8 +39,7 @@ public class SettingController {
 
             return  body;
         } catch (SetSettingDefinition.NotAllowedSettingException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
+            throw new Exceptions.DetailedRestException(HttpStatus.BAD_REQUEST,"bad_request", "Unsupported setting "+settingName, e);
         }
     }
 
