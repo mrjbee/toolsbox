@@ -3,7 +3,7 @@ var ModelPrototype = {
     _presenter:null,
 
     //Production URl
-    _serverUrl : "http://194.29.62.160:8880/remote-control-api/rest",
+    _serverUrl : "http://localhost:8080/remote-control-api/rest",
 
     //Test URl
     //_serverUrl : "http://192.168.0.201:8080/remote-config-api/rest",
