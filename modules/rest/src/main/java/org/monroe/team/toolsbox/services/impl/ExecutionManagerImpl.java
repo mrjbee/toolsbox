@@ -113,7 +113,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     private static class CopyExecution extends BaseExecution {
 
-        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(4, Files.Units.Kilobyte);
+        private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(32, Files.Units.Kilobyte);
 
         private FileModel srcFile;
         private FileModel dstFolder;
