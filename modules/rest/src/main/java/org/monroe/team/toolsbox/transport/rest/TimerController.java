@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Logger;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.transport.timer.AbstractTimerController;
 import org.monroe.team.toolsbox.transport.timer.TimerSchedule;
+import org.monroe.team.toolsbox.us.ExecutePendingTasks;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;
 
 import javax.annotation.Resource;
@@ -19,6 +20,10 @@ public class TimerController extends AbstractTimerController{
     @Inject
     StorageLookupDefinition storageLookup;
 
+    @Inject
+    ExecutePendingTasks executePendingTasks;
+
+
     @Resource(name="task")
     Logger log;
 
@@ -30,5 +35,10 @@ public class TimerController extends AbstractTimerController{
                     storageLookupConfiguration.scanLevel);
             storageLookup.perform(request);
         }
+    }
+
+    @TimerSchedule(1000)
+    public void executePendingTasks(){
+         executePendingTasks.perform();
     }
 }

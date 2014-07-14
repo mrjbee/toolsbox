@@ -1,6 +1,10 @@
 package org.monroe.team.toolsbox.services;
 
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.monroe.team.toolsbox.us.StorageLookupDefinition;
+
 import java.util.List;
 
 public interface ConfigurationManager {
@@ -10,24 +14,29 @@ public interface ConfigurationManager {
     public List<StorageLookupConfiguration> getStorageLookupEntryList();
 
 
-    public final class StorageLookupConfiguration {
+    public static final class StorageLookupConfiguration {
 
         final public String filePath;
         final public int scanLevel;
 
-        public StorageLookupConfiguration(String filePath, int scanLevel) {
+        @JsonCreator
+        public StorageLookupConfiguration(@JsonProperty("filePath")String filePath,@JsonProperty("scanLevel") int scanLevel) {
             this.filePath = filePath;
             this.scanLevel = scanLevel;
         }
     }
 
-    public final class Configuration{
 
-        final public StorageLookupConfiguration[] storageLookupConfigurations;
+    public static final class Configuration{
 
-        public Configuration(StorageLookupConfiguration... storageLookupConfigurations) {
+        public StorageLookupConfiguration[] storageLookupConfigurations;
+
+        @JsonCreator
+        public Configuration(@JsonProperty(value = "StorageLookupConfiguration" ) StorageLookupConfiguration... storageLookupConfigurations) {
             this.storageLookupConfigurations = storageLookupConfigurations;
         }
+
+
     }
 
 }

@@ -4,9 +4,11 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.type.TypeReference;
 import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 
@@ -14,6 +16,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +31,11 @@ final public class ConfigurationManagerImpl implements ConfigurationManager {
     @Override
     public synchronized void setConfig(Configuration config) {
         configuration = config;
-        updateLocalFile();
+        try {
+            updateLocalFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -45,14 +52,19 @@ final public class ConfigurationManagerImpl implements ConfigurationManager {
         return Lists.newArrayList(configuration.storageLookupConfigurations);
     }
 
-    private void updateLocalFile() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonOutput = gson.toJson(configuration);
+    private void updateLocalFile() throws IOException {
+        String jsonOutput = configurationToString();
         try {
             Files.write(jsonOutput, new File(configurationFilPath), Charsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String configurationToString() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+        return mapper.writeValueAsString(configuration);
     }
 
     @PostConstruct
@@ -66,9 +78,8 @@ final public class ConfigurationManagerImpl implements ConfigurationManager {
            List<String> contentLines = Files.readLines(configFile, Charsets.UTF_8);
            String confJson = Joiner.on("\n").join(contentLines);
            log.info("Configuration loaded from file (path={}):\n{}",configFile.getAbsolutePath(), confJson);
-           Gson gson = new GsonBuilder().create();
-           Configuration conf = gson.fromJson(confJson,Configuration.class);
-           configuration = conf;
+           ObjectMapper mapper = new ObjectMapper();
+           configuration = mapper.readValue(confJson, Configuration.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

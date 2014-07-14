@@ -1,21 +1,24 @@
 package org.monroe.team.toolsbox.transport.rest;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.monroe.team.toolsbox.services.ConfigurationManager;
-import org.monroe.team.toolsbox.transport.common.RestRouteBuilder;
+import org.monroe.team.toolsbox.transport.Translator;
 import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
 import org.monroe.team.toolsbox.us.ExecutePendingTasks;
 import org.monroe.team.toolsbox.us.GetTasksDefinition;
-import org.monroe.team.toolsbox.us.common.Exceptions;
+import org.monroe.team.toolsbox.us.common.BusinessExceptions;
+import org.monroe.team.toolsbox.us.common.TaskResponse;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.List;
 import java.util.Map;
 
 @Named
-public class TasksRoute extends RestRouteBuilder{
+public class TasksRoute {
 
     @Inject
     CreateCopyTaskDefinition createCopyTask;
@@ -24,30 +27,22 @@ public class TasksRoute extends RestRouteBuilder{
     GetTasksDefinition getTasks;
 
     @Inject
-    ExecutePendingTasks executePendingTasks;
+    Translator translate;
 
-    @Override
-    protected void doConfigure() {
-        from("timer://taskExecutionSelect?fixedRate=true&period=1s")
-                .routeId("taskExecutionSelectLoop")
-                .bean(executePendingTasks, "perform");
-
-        from("restlet:/tasks")
-            .routeId("getTasks")
-                .bean(getTasks,"perform")
-                .marshal().json(JsonLibrary.Gson);
+    @RequestMapping("/tasks")
+    public @ResponseBody List<TaskResponse> getTasks(){
+        return getTasks.perform();
+    }
 
 
-        from("restlet:/task?restletMethod=post")
-            .routeId("newTask")
-               .unmarshal().json(JsonLibrary.Gson, Map.class)
-               .choice()
-                    .when(simple("${body[type]} == 'copy'"))
-                    .convertBodyTo(CreateCopyTaskDefinition.CreateCopyTaskRequest.class)
-                    .bean(createCopyTask, "perform")
-               .otherwise()
-                    .throwException(new Exceptions.InvalidRequestException())
-                    .end()
-               .marshal().json(JsonLibrary.Gson);
+    @RequestMapping(value = "/task", method = RequestMethod.POST)
+    public @ResponseBody TaskResponse createTask(@RequestBody Map taskDetails){
+        if ("copy".equals(taskDetails.get("type"))){
+            CreateCopyTaskDefinition.CreateCopyTaskRequest request =
+                    translate.toCopyTaskCreateRequest(taskDetails);
+            return createCopyTask.perform(request);
+        }else {
+            throw new BusinessExceptions.InvalidRequestException();
+        }
     }
 }

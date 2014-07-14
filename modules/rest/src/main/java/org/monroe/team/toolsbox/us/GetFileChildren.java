@@ -8,7 +8,7 @@ import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.services.IdTranslator;
-import org.monroe.team.toolsbox.us.common.Exceptions;
+import org.monroe.team.toolsbox.us.common.BusinessExceptions;
 import org.monroe.team.toolsbox.us.common.FileResponse;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,11 +33,11 @@ public class GetFileChildren implements GetFileChildrenDefinition{
 
     @Transactional
     @Override
-    public List<FileResponse> perform(String parentFileId) throws Exceptions.InvalidIdException {
+    public List<FileResponse> perform(String parentFileId) throws BusinessExceptions.InvalidIdException {
         Integer parentId = idTranslator.asInt(parentFileId);
         FileModel parentFile = fileManager.getById(parentId);
         if (!parentFile.isExistsLocally()){
-            throw new Exceptions.IdNotFoundException(parentFileId);
+            throw new BusinessExceptions.IdNotFoundException(parentFileId);
         }
 
         if (!parentFile.isDirectory()){
