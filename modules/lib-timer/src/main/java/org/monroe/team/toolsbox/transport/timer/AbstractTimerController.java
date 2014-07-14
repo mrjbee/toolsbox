@@ -48,7 +48,7 @@ public abstract class AbstractTimerController {
         log.error("Exception during timer [{}] schedule execution", label, e);
     }
 
-    private class Schedule extends TimerTask{
+    private class Schedule{
 
         private final TimerSchedule timerScheduleDetails;
         private final Method executionMethod;
@@ -76,7 +76,12 @@ public abstract class AbstractTimerController {
         private void doScheduling(long ms) {
             if (ms == -1) return;
             try{
-                timer.schedule(this,ms);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        runImpl();
+                    }
+                },ms);
             } catch (Exception e){
                 AbstractTimerController.this.onScheduleException(getLabel(),e);
             }
@@ -90,8 +95,7 @@ public abstract class AbstractTimerController {
             }
         }
 
-        @Override
-        public void run() {
+        public void runImpl() {
             AbstractTimerController obj = AbstractTimerController.this;
             try {
                 executionMethod.invoke(obj);

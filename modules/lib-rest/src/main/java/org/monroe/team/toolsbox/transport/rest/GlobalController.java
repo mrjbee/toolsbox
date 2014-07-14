@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+//TODO: org.springframework.web.HttpMediaTypeNotSupportedException
 @ControllerAdvice
 public class GlobalController {
 
@@ -27,7 +27,7 @@ public class GlobalController {
     @ExceptionHandler(value = RestExceptions.RestException.class)
     public void onExpectedException(HttpServletResponse servletResponse, RestExceptions.RestException exception) throws Exception {
         log.info("Rest request ends with "+exception.status.value() +"["+exception.status.getReasonPhrase()+"]");
-        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.status.getReasonPhrase() + "]", exception.getCause());
+        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.status.getReasonPhrase() + "]", exception);
         checkIfRequiredRethrow(exception);
         servletResponse.sendError(exception.status.value(),exception.status.getReasonPhrase());
     }
@@ -38,8 +38,8 @@ public class GlobalController {
     RestExceptions.DetailedRestException.ErrorDetails onExpectedDetailedException(
             HttpServletRequest request,HttpServletResponse servletResponse,
             RestExceptions.DetailedRestException exception) throws Exception {
-        log.info("Rest request ends with "+exception.status.value() +"["+exception.label+":"+exception.msg+"]", exception.getCause());
-        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]");
+        log.info("Rest request ends with "+exception.status.value() +"["+exception.label+":"+exception.msg+"]");
+        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]", exception);
         checkIfRequiredRethrow(exception);
 
         if (!"application/json".equals(request.getContentType())){
