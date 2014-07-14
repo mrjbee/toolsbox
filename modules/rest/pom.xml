@@ -34,6 +34,13 @@
 
         <dependency>
             <groupId>org.monroe.team.toolsbox</groupId>
+            <artifactId>lib-timer</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.monroe.team.toolsbox</groupId>
             <artifactId>lib-logging</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>

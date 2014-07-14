@@ -33,7 +33,7 @@ public class ServerConfigurationRoute extends RestRouteBuilder {
                 .marshal()
                     .json(JsonLibrary.Gson)
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200));
-
+/*
         from("timer://storageLookupLoop?fixedRate=true&period=60s")
                 .routeId("StorageLookupLoop")
                 .bean(configurationManager, "getStorageLookupEntryList")
@@ -41,6 +41,6 @@ public class ServerConfigurationRoute extends RestRouteBuilder {
                 .split(body())
                     .convertBodyTo(StorageLookupDefinition.StorageLookupRequest.class)
                     .bean(storageLookup,"perform");
+*/
     }
-
 }
