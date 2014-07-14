@@ -21,6 +21,7 @@ var ModelPrototype = {
 
     constructor:function _constructor(){
         $.ajaxSetup({
+            contentType: "application/json; charset=UTF-8",
             beforeSend: function (request) {
                 request.setRequestHeader("Avoid-WWW-Authenticate", "yes");
                 request.setRequestHeader("Authorization", "Basic " + btoa(this._username + ":" + this._password));
@@ -55,7 +56,7 @@ var ModelPrototype = {
             url: this._serverUrl + '/file/'+rootFile.id+"/children"
         }, function (response) {
             if (response.statusCode == 200) {
-                onSuccess($.parseJSON(response.resultText))
+                onSuccess((response.resultText))
             } else {
                 onFailure(response.statusCode);
             }
@@ -68,7 +69,7 @@ var ModelPrototype = {
             url: this._serverUrl + '/storages'
         }, function (response) {
             if (response.statusCode == 200) {
-                var storages = $.parseJSON(response.resultText);
+                var storages = (response.resultText);
                 var storagesAsFiles = []
                 for (var index = 0; index < storages.length; ++index) {
                     storagesAsFiles.push({
@@ -118,7 +119,7 @@ var ModelPrototype = {
             url: this._serverUrl + '/tasks'
         }, function (response) {
             if (response.statusCode == 200) {
-                var tasks = $.parseJSON(response.resultText);
+                var tasks = (response.resultText);
                 onSuccess(tasks);
             } else {
                 //onFailure(response.statusCode);
@@ -140,7 +141,7 @@ var ModelPrototype = {
             url: this._serverUrl + '/storages'
         }, function (response) {
             if (response.statusCode == 200) {
-                var storages = $.parseJSON(response.resultText);
+                var storages = (response.resultText);
                 onSuccess(storages);
             } else {
                 if(onFailure) onFailure(response.statusCode);

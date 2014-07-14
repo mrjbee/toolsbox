@@ -32,7 +32,7 @@ public interface ConfigurationManager {
         public StorageLookupConfiguration[] storageLookupConfigurations;
 
         @JsonCreator
-        public Configuration(@JsonProperty(value = "StorageLookupConfiguration" ) StorageLookupConfiguration... storageLookupConfigurations) {
+        public Configuration(@JsonProperty(value = "storageLookupConfigurations" ) StorageLookupConfiguration... storageLookupConfigurations) {
             this.storageLookupConfigurations = storageLookupConfigurations;
         }
 

@@ -7,6 +7,7 @@ import org.monroe.team.toolsbox.us.ExecutePendingTasks;
 import org.monroe.team.toolsbox.us.GetTasksDefinition;
 import org.monroe.team.toolsbox.us.common.BusinessExceptions;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,8 +18,8 @@ import javax.inject.Named;
 import java.util.List;
 import java.util.Map;
 
-@Named
-public class TasksRoute {
+@Controller
+public class TasksController {
 
     @Inject
     CreateCopyTaskDefinition createCopyTask;

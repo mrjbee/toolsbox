@@ -16,8 +16,8 @@ public class Translator {
         boolean removeRequired;
 
         try{
-            srcFileID = (int) Math.round((Double) request.get("srcFile"));
-            dstFileID = (int) Math.round((Double) request.get("dstFile"));
+            srcFileID = (Integer) request.get("srcFile");
+            dstFileID = (Integer) request.get("dstFile");
             removeRequired = (Boolean) request.get("removeRequired");
         }catch (Exception e){
             throw new BusinessExceptions.InvalidRequestException();
