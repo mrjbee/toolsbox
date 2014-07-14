@@ -24,8 +24,8 @@ public class GlobalController {
         checkIfRequiredRethrow(exception);
     }
 
-    @ExceptionHandler(value = Exceptions.RestException.class)
-    public void onExpectedException(HttpServletResponse servletResponse, Exceptions.RestException exception) throws Exception {
+    @ExceptionHandler(value = RestExceptions.RestException.class)
+    public void onExpectedException(HttpServletResponse servletResponse, RestExceptions.RestException exception) throws Exception {
         log.info("Rest request ends with "+exception.status.value() +"["+exception.status.getReasonPhrase()+"]");
         log.debug("Rest request ends with " + exception.status.value() + "[" + exception.status.getReasonPhrase() + "]", exception.getCause());
         checkIfRequiredRethrow(exception);
@@ -33,11 +33,11 @@ public class GlobalController {
     }
 
 
-    @ExceptionHandler(value = Exceptions.DetailedRestException.class)
+    @ExceptionHandler(value = RestExceptions.DetailedRestException.class)
     public @ResponseBody
-    Exceptions.DetailedRestException.ErrorDetails onExpectedDetailedException(
+    RestExceptions.DetailedRestException.ErrorDetails onExpectedDetailedException(
             HttpServletRequest request,HttpServletResponse servletResponse,
-            Exceptions.DetailedRestException exception) throws Exception {
+            RestExceptions.DetailedRestException exception) throws Exception {
         log.info("Rest request ends with "+exception.status.value() +"["+exception.label+":"+exception.msg+"]", exception.getCause());
         log.debug("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]");
         checkIfRequiredRethrow(exception);

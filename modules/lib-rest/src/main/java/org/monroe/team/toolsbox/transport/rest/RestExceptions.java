@@ -1,10 +1,10 @@
-package org.monroe.team.toolsbox.transport.timer;
+package org.monroe.team.toolsbox.transport.rest;
 
 import org.springframework.http.HttpStatus;
 
-public final class Exceptions {
+public final class RestExceptions {
 
-    private Exceptions() {}
+    private RestExceptions() {}
 
     public static class RestException extends RuntimeException{
 
