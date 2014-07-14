@@ -30,6 +30,7 @@
         <module>modules/lib-security</module>
         <module>modules/lib-embedded-db</module>
         <module>modules/lib-rest</module>
+        <module>modules/lib-timer</module>
         <module>modules/example-rest</module>
         <module>modules/example-rest2</module>
         <module>modules/lib-swagger</module>
