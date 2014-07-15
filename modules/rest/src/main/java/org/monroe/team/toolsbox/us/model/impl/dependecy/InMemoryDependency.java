@@ -15,6 +15,8 @@ public class InMemoryDependency<DependencyType> extends Dependency<DependencyTyp
 
     @Override
     public void save() {/*do nothing as all in memory*/}
+    @Override
+    public void delete() {/*do nothing as all in memory*/}
 
     public static interface InstanceProvider<DependencyType> {
         public DependencyType get();

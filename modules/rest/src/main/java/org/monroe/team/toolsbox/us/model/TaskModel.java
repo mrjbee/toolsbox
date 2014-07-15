@@ -20,9 +20,9 @@ public interface TaskModel {
 
     <Type> Type getProperty(String src, Class<Type> requestedType);
 
-    void execute() throws ExecutionManager.ExecutionUnavailableException;
+    boolean execute() throws ExecutionManager.ExecutionUnavailableException;
 
-    void restart() throws ExecutionManager.ExecutionUnavailableException;
+    boolean restart() throws ExecutionManager.ExecutionUnavailableException;
 
     void updateStatus(ExecutionStatus progress);
 
@@ -30,12 +30,16 @@ public interface TaskModel {
 
     String getEstimationDateString();
 
+    boolean destroy();
+
+    boolean stop();
+
     public static enum Type{
         COPY, TRANSFER, DELETE
     }
 
     public static enum ExecutionStatus {
-        Pending, Progress, Finished, Fails
+        Pending, Progress, Finished, Fails, Killed
     }
 
 }

@@ -1,9 +1,9 @@
 var TaskWidgetFactoryPrototype = {
-    createFor:function(task){
+    createFor:function(task,presenter){
         var widget;
         if (task.type == "COPY"){
             widget = Object.create(CopyTaskWidgetPrototype);
-            widget.constructor(task);
+            widget.constructor(task,presenter);
         } else {
             throw Error("Unsupported type:"+task.type)
         }
@@ -22,14 +22,17 @@ var CopyTaskWidgetPrototype = {
     _speedLabel:null,
     _footer:null,
     _header:null,
+    _actionBtn:null,
+    _owner:null,
 
-    constructor : function(taskToRef){
+    constructor : function(taskToRef,owner){
         this._task = taskToRef;
+        this._owner=owner;
     },
 
 
     close: function(container){
-
+        this._content.slideUp('normal', function() { $(this).remove(); });
     },
 
     show: function(container){
@@ -50,15 +53,30 @@ var CopyTaskWidgetPrototype = {
         this._estimationLabel.text(this._task.endDate);
         this._progressbar.val(Math.round(this._task.progress*100));
         this._progressbar.slider("refresh");
-        if (this._task.status != "Fails") {
+
+        if (this._task.status != "Fails" && this._task.status != "Killed") {
             this._progressbar.parent().find('.ui-state-disabled').removeClass('ui-state-disabled');
         }
+
         if (this._task.status == "Finished" && !firstTime){
             this._footer.slideUp();
             this._header.slideUp();
         }
-
+       this._updateIcon();
     },
+
+    _updateIcon:function(){
+        //Pending, Progress, Finished, Fails, Killed
+        this._actionBtn.removeClass("ui-icon-arrow-u-r");
+        this._actionBtn.removeClass("ui-icon-delete");
+
+        if (this._task.status == "Progress" || this._task.status == "Pending"){
+            this._actionBtn.addClass("ui-icon-delete");
+        } else {
+            this._actionBtn.addClass("ui-icon-arrow-u-r");
+        }
+    },
+
 
     _render: function () {
 
@@ -82,9 +100,24 @@ var CopyTaskWidgetPrototype = {
             .attr("disabled","true");
         var caption =  $(document.createElement("label"));
         caption.append("");
+        this._actionBtn =  $(document.createElement("a"));
+        this._actionBtn
+            .addClass("ui-btn")
+            .addClass("ui-icon-delete")
+            .addClass("ui-btn-icon-notext")
+            .addClass("ui-corner-all")
+            .addClass("ui-btn-inline");
+        this._actionBtn.click(function(event){
+            this._owner.onTaskActionBtn(this._task,this)
+        }.bind(this));
+
         filedset.append(caption);
         filedset.append(this._progressbar);
+
+        //<a href="#" class="ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all">No text</a>
+
         this._header.append(filedset);
+        body.append(this._actionBtn);
         body.append("<b>Copy</b> <span class='raw-data'>"+this._task.details["src"]+"</span> in to <span class='raw-data'>"+this._task.details["dst"]+"</span>");
 
         var statusLabel = $(document.createElement("label"));
@@ -93,7 +126,7 @@ var CopyTaskWidgetPrototype = {
         this._estimationLabel = $(document.createElement("span")).addClass("raw-data");
 
         this._footer.append(statusLabel);
-        statusLabel.append("Status");
+        statusLabel.append(" Status");
         statusLabel.append(this._statusLabel);
         statusLabel.append("Estimation");
         statusLabel.append(this._estimationLabel);

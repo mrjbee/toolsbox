@@ -97,11 +97,36 @@ public class TaskModelImpl implements TaskModel {
 
 
     @Override
-    public void execute() throws ExecutionManager.ExecutionUnavailableException {
-        executeImpl(false);
+    public synchronized  boolean execute() throws ExecutionManager.ExecutionUnavailableException {
+        return executeImpl(false);
     }
 
-    private void executeImpl(boolean restart) throws ExecutionManager.ExecutionUnavailableException {
+
+    @Override
+    public synchronized boolean restart() throws ExecutionManager.ExecutionUnavailableException {
+        return executeImpl(true);
+    }
+
+    @Override
+    public synchronized boolean destroy() {
+        if (ExecutionStatus.Progress.equals(getStatus())){
+            return false;
+        }
+        taskDependency.delete();
+        return true;
+    }
+
+    @Override
+    public synchronized boolean stop() {
+        if (!executionDependency.exists()){
+            return false;
+        }
+        executionDependency.get().kill();
+        return true;
+    }
+
+    private boolean executeImpl(boolean restart) throws ExecutionManager.ExecutionUnavailableException {
+        if (taskDependency.refresh() == null) return false;
         switch (getType()){
             case COPY:
                 executionManager.executeAsCopyTask(this,restart);
@@ -109,11 +134,7 @@ public class TaskModelImpl implements TaskModel {
             default:
                 throw new UnsupportedOperationException();
         }
-    }
-
-    @Override
-    public void restart() throws ExecutionManager.ExecutionUnavailableException {
-        executeImpl(true);
+        return true;
     }
 
     @Override

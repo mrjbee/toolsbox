@@ -26,6 +26,14 @@ public class JPADependency<DependencyType, DependencyId extends Serializable> ex
     }
 
     @Override
+    public void delete() {
+       repository.delete(id);
+       super.unSet();
+    }
+
+
+
+    @Override
     protected DependencyType refreshImpl() {
         return repository.findOne(id);
     }

@@ -36,4 +36,10 @@ public abstract class Dependency<DependencyType> {
         refresh();
         return dependency!=null;
     };
+
+    public abstract void delete();
+
+    public void unSet() {
+        dependency = null;
+    }
 }

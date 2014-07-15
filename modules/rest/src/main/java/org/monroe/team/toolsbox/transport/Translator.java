@@ -2,7 +2,7 @@ package org.monroe.team.toolsbox.transport;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;
-import org.monroe.team.toolsbox.us.common.BusinessExceptions;
+import org.monroe.team.toolsbox.us.common.TransportExceptions;
 
 import javax.inject.Named;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
 @Named
 public class Translator {
 
-    public CreateCopyTaskDefinition.CreateCopyTaskRequest toCopyTaskCreateRequest(Map request) throws BusinessExceptions.InvalidRequestException {
+    public CreateCopyTaskDefinition.CreateCopyTaskRequest toCopyTaskCreateRequest(Map request) throws TransportExceptions.InvalidRequestException {
 
         int srcFileID, dstFileID;
         boolean removeRequired;
@@ -20,7 +20,7 @@ public class Translator {
             dstFileID = (Integer) request.get("dstFile");
             removeRequired = (Boolean) request.get("removeRequired");
         }catch (Exception e){
-            throw new BusinessExceptions.InvalidRequestException();
+            throw new TransportExceptions.InvalidRequestException();
         }
         return new CreateCopyTaskDefinition.CreateCopyTaskRequest(srcFileID, dstFileID, removeRequired);
     }

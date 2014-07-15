@@ -149,6 +149,25 @@ var ModelPrototype = {
         }.bind(this))
     },
 
+    killTask: function (taskId, callback) {
+        this._doRequest({
+            type: "DELETE",
+            url: this._serverUrl + '/task/'+taskId+"/execution"
+        }, function (response) {
+            callback(taskId, (response.statusCode == 200 || response.statusCode == 202));
+        }.bind(this))
+    },
+
+
+    cleanTask: function (taskId, callback) {
+        this._doRequest({
+            type: "DELETE",
+            url: this._serverUrl + '/task/'+taskId
+        }, function (response) {
+           callback(taskId, (response.statusCode == 200 || response.statusCode == 202));
+        }.bind(this))
+    },
+
     _doRequest: function __doRequest(ajaxDetails, callback) {
         $.ajax(ajaxDetails).always(function (dataorJQXHR, textStatus, jqXHRorErrorThrown) {
             if (textStatus == "success") {

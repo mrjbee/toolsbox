@@ -39,16 +39,14 @@ var PresenterPrototype = {
                         itWidget = this._taskWidgets["task"+itTask.taskId];
                         itWidget.update(itTask);
                     } else {
-                        itWidget = this._taskWidgetFactory.createFor(itTask);
+                        itWidget = this._taskWidgetFactory.createFor(itTask,this);
                         this._taskWidgets["task"+itTask.taskId] = itWidget;
                         itWidget.show(this._view.taskBrowserList);
                     }
-                    taskMap["task"+itTask.taskId];
+                    taskMap["task"+itTask.taskId] = true;
                 }
                 for(var itWidgetName in this._taskWidgets){
-                    if(taskMap[itWidgetName == null]){
-                        //TODO: test it
-                        alert("Hope it will work:"+itWidgetName);
+                    if(taskMap[itWidgetName] == null){
                         itWidget = this._taskWidgets[itWidgetName];
                         delete this._taskWidgets[itWidgetName];
                         itWidget.close(this._view.taskBrowserList);
@@ -243,6 +241,34 @@ var PresenterPrototype = {
                 this._askForReLogin(statusCode);
             }.bind(this)
         );
+    },
+
+    onTaskActionBtn:function(task, taskWidget) {
+        this._lockUI(true)
+        if (task.status == "Progress") {
+            //request execution cancellation
+            this._model.killTask(task.taskId, function(taskId, result){
+                this._unlockUI();
+                if (!result){
+                    alert("Ooops, fails. Try that again!");
+                }
+            }.bind(this));
+        } else {
+            //request task cleanup
+            this._model.cleanTask(task.taskId,function(taskId, result){
+                if (result){
+                    //remove widget
+                    var itWidget = this._taskWidgets["task"+taskId];
+                    if (itWidget){
+                        delete this._taskWidgets["task"+taskId];
+                        itWidget.close(this._view.taskBrowserList);
+                    }
+                } else {
+                    alert("Ooops, fails. Try that again!");
+                }
+                this._unlockUI();
+            }.bind(this));
+        }
     },
 
     _unlockUI: function () {

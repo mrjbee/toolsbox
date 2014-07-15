@@ -9,4 +9,6 @@ public interface TaskManager {
 
     TaskModel newTask(TaskModel.Type type);
     List<TaskModel> fetchAll();
+
+    TaskModel taskById(Integer taskId);
 }

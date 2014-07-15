@@ -10,6 +10,7 @@ import org.monroe.team.toolsbox.repositories.TaskRepository;
 import org.monroe.team.toolsbox.services.ExecutionManager;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.TaskManager;
+import org.monroe.team.toolsbox.us.model.TaskModel;
 import org.monroe.team.toolsbox.us.model.impl.TaskModelImpl;
 import org.monroe.team.toolsbox.us.model.impl.dependecy.InMemoryDependency;
 import org.monroe.team.toolsbox.us.model.impl.dependecy.JPADependency;
@@ -66,5 +67,12 @@ public class TaskManagerImpl implements TaskManager{
                 return createByTask(task);
             }
         });
+    }
+
+    @Override
+    public TaskModel taskById(Integer taskId) {
+        Task task = taskRepository.findOne(taskId);
+        if (task == null) return null;
+        return createByTask(task);
     }
 }

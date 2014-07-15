@@ -12,6 +12,7 @@ import org.monroe.team.toolsbox.us.model.TaskModel;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,6 +46,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
     @Override
     public Execution getTaskExecution(Integer taskId) {
+        taskLog.debug("[Task = {}] Requested execution. Exists = {}", taskId, currentExecutionsMap.get(taskId));
         return currentExecutionsMap.get(taskId);
     }
 
@@ -74,6 +76,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         taskLog.info("Capture resources for task = {}", taskModel.getRef());
         captureThreads(readDeviceId, writeDeviceId);
         execution.initialize();
+        taskLog.info("Registering execution of task = {} :"+this.toString(), taskModel.getRef());
         currentExecutionsMap.put(taskModel.getRef(),execution);
         taskModel.updateStatus(TaskModel.ExecutionStatus.Progress);
         executorService.execute(execution);
@@ -249,6 +252,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private Float progress = 0f;
         private final boolean cleanRun;
         protected final Logger log;
+        private boolean killed = false;
 
         private BaseExecution(Function<Void, Void> onFinish, TaskModel task, boolean cleanRun, Logger log) {
             this.task = task;
@@ -271,6 +275,11 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
+        public void kill() {
+            killed = true;
+        }
+
+        @Override
         public void run() {
             log.info("[Task = {}] Execution started ... ", task.getRef());
             try {
@@ -289,9 +298,14 @@ public class ExecutionManagerImpl implements ExecutionManager{
                     setProgress(currentProgress);
                     if (Thread.currentThread().isInterrupted()){
                         log.warn("[Task = {}] was interrupted ...", task.getRef());
-                        task.updateStatus(TaskModel.ExecutionStatus.Fails);
-                        break;
+                        throw new InterruptedException();
                     }
+
+                    if (killed){
+                        log.warn("[Task = {}] was killed ...", task.getRef());
+                        throw new InterruptedException("killed");
+                    }
+
                     if (currentStep>=stepCount){
                         stepCount++;
                         log.warn("[Task = {}] increasing step count ...", task.getRef());
@@ -305,10 +319,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 log.warn("[Task = "+task.getRef()+"] Exception during execution task. ", e);
                 try {
                     log.info("[Task = {}] Rollback and release resources", task.getRef());
+                    task.updateStatus(killed ? TaskModel.ExecutionStatus.Killed : TaskModel.ExecutionStatus.Fails);
                     if (rollbackAndReleaseResources()){
                         releaseResources();
                     }
-                    task.updateStatus(TaskModel.ExecutionStatus.Fails);
                 } catch (Exception rollbackException){
                     log.warn("[Task = "+task.getRef()+"] Exception during rollback. ", e);
                 }

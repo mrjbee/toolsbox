@@ -150,10 +150,17 @@ body {
     vertical-align: middle;
     padding-right: 10px;
 }
+
 .progress-bar .ui-slider {
     display: table-cell;
     width: 100%;
 }
+
+.act-btn {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .progress-bar input[type=range], .ui-slider-handle {
     display: none;
 }

@@ -4,7 +4,7 @@ package org.monroe.team.toolsbox.us.common;
 import org.monroe.team.toolsbox.transport.rest.RestExceptions;
 import org.springframework.http.HttpStatus;
 
-final public class BusinessExceptions {
+final public class TransportExceptions {
 
     public static class IdNotFoundException extends RestExceptions.DetailedRestException {
 
@@ -28,4 +28,10 @@ final public class BusinessExceptions {
         }
     }
 
+    public static class InvalidOperationException extends RestExceptions.DetailedRestException{
+
+        public InvalidOperationException(String label, String msg, Throwable cause) {
+            super(HttpStatus.CONFLICT, label, msg, cause);
+        }
+    }
 }
