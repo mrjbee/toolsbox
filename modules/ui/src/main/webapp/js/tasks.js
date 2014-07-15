@@ -80,14 +80,12 @@ var CopyTaskWidgetPrototype = {
 
     _render: function () {
 
-        this._content.addClass("ui-corner-all");
-        this._content.addClass("ui-body");
-        this._content.addClass("ui-body-a");
+        this._content.addClass("ui-corner-all").addClass("ui-body").addClass("ui-body-a");
 
 
-        this._header = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-header");
+        this._header = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-b").addClass("task-header");
         var body = $(document.createElement("div")).addClass("ui-body").addClass("ui-body-a").addClass("task-body");
-        this._footer = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-a").addClass("task-footer");
+        this._footer = $(document.createElement("div")).addClass("ui-bar").addClass("ui-bar-b").addClass("task-footer");
         var filedset = $(document.createElement("fieldset")).addClass("progress-bar");
         this._progressbar = $(document.createElement("input"))
             .attr("name","slider-2")
@@ -103,6 +101,7 @@ var CopyTaskWidgetPrototype = {
         this._actionBtn =  $(document.createElement("a"));
         this._actionBtn
             .addClass("ui-btn")
+            .addClass("ui-btn-a")
             .addClass("ui-icon-delete")
             .addClass("ui-btn-icon-notext")
             .addClass("ui-corner-all")
