@@ -23,7 +23,7 @@
     </listener>
      <listener>
             <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-        </listener>
+     </listener>
     <context-param>
         <param-name>log4jConfiguration</param-name>
         <param-value>log4j.xml</param-value>
