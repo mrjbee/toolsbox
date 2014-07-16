@@ -72,8 +72,9 @@
                   <div data-role="tabs" id="tabs" >
                     <div data-role="navbar" id="navbar"  data-iconpos="left">
                         <ul>
-                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-btn-active " id="file-tab-btn">Files</a></li>
-                            <li><a href="#two" data-icon="star" data-ajax="false" id="tasks-tab-btn" >Tasks</a></li>
+                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-mini ui-btn-active " id="file-tab-btn">File Manger</a></li>
+                            <li><a href="#two" data-icon="cloud" data-ajax="false" class="ui-mini" id="download-tab-btn" >Download Manager</a></li>
+                            <li><a href="#three" data-icon="star" data-ajax="false" class="ui-mini" id="tasks-tab-btn" >Task Manager</a></li>
                         </ul>
                     </div>
                     <div id="one">
@@ -86,10 +87,50 @@
 
                     </div>
                     <div id="two">
+                        <div class="ui-body ui-body-a ui-corner-all">
+                            <ul data-role="listview" id="download-form-list">
+                                <li data-role="list-divider">Download using URL</li>
+                                <li>
+                                    <a href="#" class="ui-icon-refresh" id="download-file-refresh-btn">
+                                        <input id="download-file-url-edit" placeholder="Place url here"  value="" data-clear-btn="false" type="text">
+                                    </a>
+                                </li>
+                                <li class="ui-field-contain" style="display: none">
+                                    <div class="ui-body">
+                                        <a class="ui-link content-wrap"
+                                           href="#" id="download-file-url-link"></a>
+                                    </div>
+                                </li>
+                                <li class="ui-field-contain" style="display: none">
+                                    <label>File name</label>
+                                    <input id="download-file-name-edit" value="" data-clear-btn="true" type="text">
+                                </li>
+                                <li class="ui-field-contain" style="display: none">
+                                    <label>File extension</label>
+                                    <input id="download-file-ext-edit" value="" data-clear-btn="true" type="text">
+                                </li>
+                                <li class="ui-field-contain" style="display: none">
+                                    <label>File size</label>
+                                    <label id="download-file-size-label">2.0 KB</label>
+                                </li>
+                            </ul>
+
+                            <div class="ui-content ui-body-b"  id="downloads-file-browser-panel" style="display: none">
+                                <p>Please select destination folder</p>
+                                <ul data-role="listview" data-inset="true" id="download-file-browser-list">
+                                </ul>
+                                <a href="#" class="ui-btn ui-mini  ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon" id="download-file-back-storage-btn">Back to storage List</a>
+                                <div id="download-file-info-label" class="warning" style="display: none"></div>
+                                <a id="download-file-btn" href="#" class="ui-btn ui-btn-b ui-btn-corner-all ui-icon-check ui-btn-inline ui-btn-icon-left">Download</a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div id="three">
                         <a href="#" class="ui-btn ui-mini ui-icon-arrow-u-r ui-btn-icon-left ui-nodisc-icon ui-alt-icon">Clear Task History</a>
                         <div class="ui-body ui-body-a ui-corner-all">
                             <div id="task-browser-list">
-                        </div>
+                            </div>
                         </div>
                     </div>
                 </div>

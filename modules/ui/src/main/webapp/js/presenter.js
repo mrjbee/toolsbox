@@ -160,7 +160,7 @@ var PresenterPrototype = {
                     alert("Not implemented.Please refresh browser and start again")
                 })
             }
-          })
+          });
 
         this._copyBrowserView = Object.create(FileBrowserPrototype);
         this._copyBrowserView.constructor({
@@ -215,7 +215,32 @@ var PresenterPrototype = {
                     alert("Not implemented.Please refresh browser and start again")
                 })
             }
-        })
+        });
+
+        this._view.downloadFileRefreshBtn.on('click', function () {
+            //Prevent clicking while editing url
+            if (me._view.downloadFileUrlEdit.is(":focus")) return;
+            var url=me._view.downloadFileUrlEdit.val().trim();
+            if(url != ""){
+                this._lockUI();
+                this._model.fetchUrlDetails(url, function(success, urlDetails, statusCode){
+                    if (success){
+                        this._view.downloadFileUrlLink.text(urlDetails.url);
+                        this._view.downloadFileUrlLink.attr("href",urlDetails.url);
+                        this._view.downloadFileNameEdit.val(urlDetails.fileName);
+                        this._view.downloadFileExtEdit.val(urlDetails.ext);
+                        this._view.downloadFileSizeLabel.text(urlDetails.size);
+                        for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
+                            this._view.downloadUrlDetailsFields.slideDown();
+                        }
+                    }else{
+                        alert("Ooops! Something bad. ("+statusCode+")");
+                    }
+                    this._unlockUI();
+                }.bind(this));
+            }
+        }.bind(me));
+
     },
 
     initial : function(){

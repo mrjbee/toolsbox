@@ -1,3 +1,4 @@
+
 .ui-icon-fly:after {
     background-image: url("fly_21.png");
     /* Make your icon fit */
@@ -39,12 +40,22 @@ body {
     padding: 0;
 }
 
+.content-wrap {
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
 
 #storage-browser-list{
     margin: 0;
 }
 
 #file-browser-list{
+    margin: 0;
+}
+#download-form-list{
     margin: 0;
 }
 

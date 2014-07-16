@@ -24,7 +24,19 @@ function initMVP(){
         tasksTabBtn:$("#tasks-tab-btn"),
         filesTabBtn:$("#file-tab-btn"),
         taskBrowserList:$("#task-browser-list"),
-        storageBrowserList:$("#storage-browser-list")
+        storageBrowserList:$("#storage-browser-list"),
+        downloadUrlDetailsFields:$("#download-form-list .ui-field-contain"),
+        downloadFileRefreshBtn:$("#download-file-refresh-btn"),
+        downloadFileUrlEdit:$("#download-file-url-edit"),
+        downloadFileUrlLink:$("#download-file-url-link"),
+        downloadFileNameEdit:$("#download-file-name-edit"),
+        downloadFileExtEdit:$("#download-file-ext-edit"),
+        downloadFileSizeLabel:$("#download-file-size-label"),
+        downloadFileBrowserList:$("#download-file-browser-list"),
+        downloadFileBrowserPanel:$("#downloads-file-browser-panel"),
+        downloadFileBackStorageBtn:$("#download-file-back-storage-btn"),
+        downloadFileInfoLabel:$("#download-file-info-label"),
+        downloadFileBtn:$("#download-file-btn")
     });
 
     //TODO: disbale form submission. Place it in presenter

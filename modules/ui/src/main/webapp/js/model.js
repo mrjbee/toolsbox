@@ -168,6 +168,17 @@ var ModelPrototype = {
         }.bind(this))
     },
 
+    fetchUrlDetails: function (url, callback){
+        //function(success, urlDetails, statusCode)
+        this._doRequest({
+            type: "POST",
+            url: this._serverUrl + '/downloads/details',
+            data: JSON.stringify({url:url})
+        }, function (response) {
+            callback(response.statusCode == 200,response.resultText,response.statusCode);
+        }.bind(this))
+    },
+
     _doRequest: function __doRequest(ajaxDetails, callback) {
         $.ajax(ajaxDetails).always(function (dataorJQXHR, textStatus, jqXHRorErrorThrown) {
             if (textStatus == "success") {
