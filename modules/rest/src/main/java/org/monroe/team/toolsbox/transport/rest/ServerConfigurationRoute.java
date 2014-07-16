@@ -16,8 +16,9 @@ public class ServerConfigurationRoute {
     @Inject ConfigurationManager configurationManager;
 
     @RequestMapping(value = "/configuration",method = RequestMethod.POST)
-    public void configure(@RequestBody ConfigurationManager.Configuration config){
+    public @ResponseBody ConfigurationManager.Configuration configure(@RequestBody ConfigurationManager.Configuration config){
         configurationManager.setConfig(config);
+        return getConfig();
     }
 
     @RequestMapping(value = "/configuration")
