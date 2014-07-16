@@ -1,6 +1,7 @@
 package org.monroe.team.toolsbox.transport;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
+import org.monroe.team.toolsbox.us.CreateDownloadTaskDefinition;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;
 import org.monroe.team.toolsbox.us.common.TransportExceptions;
 
@@ -29,4 +30,16 @@ public class Translator {
         return new StorageLookupDefinition.StorageLookupRequest(configuration.filePath, configuration.scanLevel);
     }
 
+    public CreateDownloadTaskDefinition.DownloadTaskCreationRequest toDownloadTaskCreateRequest(Map request) {
+        int dstFileID;
+        String fileName, url;
+        try{
+            dstFileID = (Integer) request.get("dst");
+            fileName = request.get("name").toString();
+            url = request.get("url").toString();
+        }catch (Exception e){
+            throw new TransportExceptions.InvalidRequestException();
+        }
+        return new CreateDownloadTaskDefinition.DownloadTaskCreationRequest(dstFileID,url,fileName);
+    }
 }

@@ -16,12 +16,6 @@ import java.util.ArrayList;
 public class CreateCopyTask implements CreateCopyTaskDefinition{
 
     @Inject
-    TaskRepository taskRepository;
-
-    @Inject
-    PropertyRepository propertyRepository;
-
-    @Inject
     TaskManager taskManager;
 
     @Override

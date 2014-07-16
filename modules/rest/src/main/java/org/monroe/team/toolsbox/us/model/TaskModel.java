@@ -34,8 +34,10 @@ public interface TaskModel {
 
     boolean stop();
 
+    String getExecutionSpeed();
+
     public static enum Type{
-        COPY, TRANSFER, DELETE
+        COPY, TRANSFER, DOWNLOAD, DELETE
     }
 
     public static enum ExecutionStatus {

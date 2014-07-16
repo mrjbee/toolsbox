@@ -41,6 +41,7 @@ public class GetTasks implements GetTasksDefinition{
                         task.getTypeAsString(),
                         task.getEstimationDateString(),
                         task.getExecutionProgress());
+                taskResponse.with("speed",task.getExecutionSpeed());
 
                 switch (task.getType()){
                     case COPY:
@@ -50,14 +51,25 @@ public class GetTasks implements GetTasksDefinition{
                         FileModel dstFile = fileManager.getById(dstFileId);
                         if (srcFile !=null && dstFile != null) {
                             taskResponse.with("src", srcFile.getSimpleName())
-                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName())
-                                    .with("speed", dstFile.getStorage().getSpeedAsString());
+                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
                         } else {
                             taskResponse.with("src", "NaN")
                                     .with("dst","NaN");
-
                         }
-
+                        break;
+                    case DOWNLOAD:
+                        taskResponse
+                                .with("name", task.getProperty("fileName",String.class))
+                                .with("url", task.getProperty("url",String.class));
+                        dstFileId = task.getProperty("dst", Integer.class);
+                        dstFile = fileManager.getById(dstFileId);
+                        if (dstFile != null) {
+                            taskResponse
+                                    .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
+                        } else {
+                            taskResponse
+                                    .with("dst","NaN");
+                        }
                         break;
                     default:
                         throw new RuntimeException("Unsupported type");

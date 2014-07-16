@@ -1,10 +1,7 @@
 package org.monroe.team.toolsbox.transport.rest;
 
 import org.monroe.team.toolsbox.transport.Translator;
-import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
-import org.monroe.team.toolsbox.us.DeleteTaskDefinition;
-import org.monroe.team.toolsbox.us.GetTasksDefinition;
-import org.monroe.team.toolsbox.us.StopTaskDefinition;
+import org.monroe.team.toolsbox.us.*;
 import org.monroe.team.toolsbox.us.common.TransportExceptions;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
 import org.springframework.http.HttpStatus;
@@ -33,6 +30,8 @@ public class TasksController {
 
     @Inject
     Translator translate;
+    @Inject
+    CreateDownloadTaskDefinition createDownloadTask;
 
     @RequestMapping("/tasks")
     public @ResponseBody List<TaskResponse> getTasks(){
@@ -46,7 +45,11 @@ public class TasksController {
             CreateCopyTaskDefinition.CreateCopyTaskRequest request =
                     translate.toCopyTaskCreateRequest(taskDetails);
             return createCopyTask.perform(request);
-        }else {
+        }else if ("download".equals(taskDetails.get("type"))){
+            CreateDownloadTaskDefinition.DownloadTaskCreationRequest request =
+                    translate.toDownloadTaskCreateRequest(taskDetails);
+            return createDownloadTask.perform(request);
+        } else {
             throw new TransportExceptions.InvalidRequestException();
         }
     }

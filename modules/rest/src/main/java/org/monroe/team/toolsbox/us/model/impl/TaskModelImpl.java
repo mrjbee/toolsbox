@@ -132,7 +132,7 @@ public class TaskModelImpl implements TaskModel {
                 executionManager.executeAsCopyTask(this,restart);
                 break;
             default:
-                throw new UnsupportedOperationException();
+                throw new UnsupportedOperationException("Could not execute:"+getType());
         }
         return true;
     }
@@ -150,7 +150,21 @@ public class TaskModelImpl implements TaskModel {
     }
 
     @Override
+    public String getExecutionSpeed() {
+        switch (getType()){
+            case COPY:
+                FileModel dst = getProperty("dst", FileModel.class);
+                if (!dst.isExistsLocally()) return "NaN";
+                return dst.getStorage().getSpeedAsString();
+            case DOWNLOAD:
+                return "NaN";
+            default: return "NaN";
+        }
+    }
+
+    @Override
     public String getEstimationDateString() {
+
         long msCount = 0;
 
         if (executionDependency.exists()){
@@ -160,13 +174,22 @@ public class TaskModelImpl implements TaskModel {
             }
         }
 
-        if (msCount == 0){
-            double speed = getProperty("dst",FileModel.class).getStorage().getSpeed();
-            long size = getProperty("src",FileModel.class).getByteSize();
-            if (speed == 0) return "NaN";
-            msCount = Math.round(size/speed);
+        switch (getType()){
+            case COPY:
+                if (msCount == 0){
+                    double speed = getProperty("dst",FileModel.class).getStorage().getSpeed();
+                    long size = getProperty("src",FileModel.class).getByteSize();
+                    if (speed == 0) return "NaN";
+                    msCount = Math.round(size/speed);
+                }
+            break;
+            case DOWNLOAD:
+                return "NaN";
         }
+        return msToHuman(msCount);
+    }
 
+    private String msToHuman(long msCount) {
         StringBuffer result = new StringBuffer();
         long hr =0, min =0, sec =0;
         if (msCount/(1000*60*60) != 0){
