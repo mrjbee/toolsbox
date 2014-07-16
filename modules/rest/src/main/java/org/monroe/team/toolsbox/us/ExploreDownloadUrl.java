@@ -1,15 +1,21 @@
 package org.monroe.team.toolsbox.us;
 
+import com.google.common.base.Utf8;
 import com.google.common.io.Files;
 import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.james.mime4j.util.MimeUtil;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Resource;
 import javax.inject.Named;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 @Named
 public class ExploreDownloadUrl implements ExploreDownloadUrlDefinition {
@@ -21,10 +27,11 @@ public class ExploreDownloadUrl implements ExploreDownloadUrlDefinition {
         CloseableHttpClient httpclient = HttpClientBuilder.create().build();
         try{
             HttpGet httpget = new HttpGet(url);
+            httpget.setHeader("Content-Type", "charset=UTF-8");
             HttpResponse response = null;
             try {
                 response = httpclient.execute(httpget);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new UnreachableUrlException(e);
             }
 
@@ -60,12 +67,20 @@ public class ExploreDownloadUrl implements ExploreDownloadUrlDefinition {
         return name+"."+ext;
     }
 
+
     private String getFileName(Header[] headers) {
         for (Header header : headers) {
             for (HeaderElement headerElement : header.getElements()) {
                 for (NameValuePair nameValuePair : headerElement.getParameters()) {
                     if (nameValuePair.getName()!=null &&"filename".equals(nameValuePair.getName().toLowerCase())){
-                        return nameValuePair.getValue();
+                        try {
+                            String fileName = nameValuePair.getValue();
+                            fileName = URLEncoder.encode(fileName, "ISO8859_1");
+                            fileName = URLDecoder.decode(fileName, "UTF-8");
+                            return fileName;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }
