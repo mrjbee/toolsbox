@@ -32,8 +32,5 @@ public interface FileModel {
 
     InputStream openReadStream() throws IOException;
 
-    void closeStream(InputStream is) throws IOException;
-    void closeStream(OutputStream is) throws IOException;
-
     long getByteSize();
 }

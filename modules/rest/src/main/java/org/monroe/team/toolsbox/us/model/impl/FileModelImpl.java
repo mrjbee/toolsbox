@@ -133,18 +133,6 @@ public class FileModelImpl implements FileModel{
     }
 
     @Override
-    public void closeStream(InputStream is) throws IOException {
-        if (is == null) return;
-        is.close();
-    }
-
-    @Override
-    public void closeStream(OutputStream is) throws IOException {
-        if (is == null) return;
-        is.close();
-    }
-
-    @Override
     public long getByteSize() {
         return (isDirectory())?0:asFile().length();
     }

@@ -7,10 +7,13 @@ import org.monroe.team.toolsbox.entities.Task;
 import org.monroe.team.toolsbox.repositories.PropertyRepository;
 import org.monroe.team.toolsbox.services.ExecutionManager;
 import org.monroe.team.toolsbox.services.FileManager;
+import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.TaskModel;
 import org.monroe.team.toolsbox.us.model.impl.dependecy.Dependency;
+
+import java.text.DecimalFormat;
 
 public class TaskModelImpl implements TaskModel {
 
@@ -131,6 +134,9 @@ public class TaskModelImpl implements TaskModel {
             case COPY:
                 executionManager.executeAsCopyTask(this,restart);
                 break;
+            case DOWNLOAD:
+                executionManager.executeAsDownloadTask(this,restart);
+                break;
             default:
                 throw new UnsupportedOperationException("Could not execute:"+getType());
         }
@@ -155,38 +161,52 @@ public class TaskModelImpl implements TaskModel {
             case COPY:
                 FileModel dst = getProperty("dst", FileModel.class);
                 if (!dst.isExistsLocally()) return "NaN";
-                return dst.getStorage().getSpeedAsString();
+                double speed = dst.getStorage().getSpeed();
+                return convertSpeedToHuman(speed);
             case DOWNLOAD:
+                if (executionDependency.exists()){
+                    Double downloadSpeed = (Double) executionDependency.get().getStatistic("speed");
+                    if (downloadSpeed!= null) return convertSpeedToHuman(downloadSpeed);
+                }
                 return "NaN";
             default: return "NaN";
         }
+
+
+    }
+
+    private String convertSpeedToHuman(double speed) {
+        if (speed == 0) return "0 mb/sec";
+        double bytesInMs = speed;
+        double mByteInMin = bytesInMs * 1000 / Files.convertFromUnits(1, Files.Units.Megabyte);
+        return new DecimalFormat("##.##").format(mByteInMin)+" mb/sec";
     }
 
     @Override
     public String getEstimationDateString() {
 
-        long msCount = 0;
-
         if (executionDependency.exists()){
+            long msCount = 0;
             Long ms = (Long) executionDependency.get().getStatistic("end_time");
             if (ms != null){
                 msCount = ms;
             }
+            return msToHuman(msCount);
         }
 
         switch (getType()){
             case COPY:
-                if (msCount == 0){
+                    long msCount = 0;
                     double speed = getProperty("dst",FileModel.class).getStorage().getSpeed();
                     long size = getProperty("src",FileModel.class).getByteSize();
                     if (speed == 0) return "NaN";
                     msCount = Math.round(size/speed);
-                }
-            break;
+                    return msToHuman(msCount);
             case DOWNLOAD:
-                return "NaN";
+                    return "NaN";
+            default:
+                    return "NaN";
         }
-        return msToHuman(msCount);
     }
 
     private String msToHuman(long msCount) {
