@@ -5,6 +5,7 @@ var PresenterPrototype = {
     _view: null,
     _rootBrowserView: null,
     _copyBrowserView: null,
+    _downloadBrowserView: null,
     _taskWidgetFactory: null,
     _taskWidgets:{},
 
@@ -24,6 +25,10 @@ var PresenterPrototype = {
 
         this._view.copyDialogStorageListBtn.click(function(){
             this._copyBrowserView.moveToRoot();
+        }.bind(this));
+
+        this._view.downloadFileBackStorageBtn.click(function(){
+            this._downloadBrowserView.moveToRoot();
         }.bind(this));
 
         this._view.filesTabBtn.on('click', function(){
@@ -217,12 +222,70 @@ var PresenterPrototype = {
             }
         });
 
+        this._downloadBrowserView = Object.create(FileBrowserPrototype);
+        this._downloadBrowserView.constructor({
+            requestLoadingRendering : function () {me._lockUI(true)},
+            cancelLoadingRendering:function () {me._unlockUI()},
+            rootView:function () {return me._view.downloadFileBrowserList},
+
+            renderHeader:function (selectedFiles) {
+                var caption = "Available Storages"
+                if (selectedFiles.length != 0){
+                    caption = "";
+                    for (var i=0;i<selectedFiles.length;i++){
+                        caption=caption+"/"+selectedFiles[i].name;
+                    }
+                }
+                var liEl;
+                liEl = $(document.createElement("li"));
+                liEl.attr("data-role","list-divider");
+                liEl.css("direction","rtl");
+                liEl.append(caption);
+                return liEl;
+            },
+            renderFolder:function (itFolder, doOnTraverse){
+                var liEl,aEl;
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                liEl.append(aEl);
+                aEl.append(itFolder.name);
+                aEl.click({
+                    file:itFolder,
+                    browserCallBack:doOnTraverse
+                },function(event){
+                    event.data.browserCallBack(event.data.file);
+                })
+                return liEl;
+            },
+            renderFile : function (itFile) {
+                var liEl;
+                liEl = $(document.createElement("li"));
+                liEl.append(itFile.name);
+                liEl.append('<p class="ui-li-aside">'+itFile.size+'</p>');
+                return liEl;
+            }
+        },{
+            getRoots : function (doOnDone) {
+                return me._model.requestStoragesAsFiles(doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            },
+            getSubFiles : function (file, doOnDone) {
+                return me._model.requestFiles(file, doOnDone, function(status){
+                    alert("Not implemented.Please refresh browser and start again")
+                })
+            }
+        });
+
         this._view.downloadFileRefreshBtn.on('click', function () {
             //Prevent clicking while editing url
             if (me._view.downloadFileUrlEdit.is(":focus")) return;
             var url=me._view.downloadFileUrlEdit.val().trim();
             if(url != ""){
                 this._lockUI();
+                for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
+                    this._view.downloadUrlDetailsFields.fadeOut();
+                }
                 this._model.fetchUrlDetails(url, function(success, urlDetails, statusCode){
                     if (success){
                         this._view.downloadFileUrlLink.text(urlDetails.url);
@@ -231,14 +294,50 @@ var PresenterPrototype = {
                         this._view.downloadFileExtEdit.val(urlDetails.ext);
                         this._view.downloadFileSizeLabel.text(urlDetails.size);
                         for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
-                            this._view.downloadUrlDetailsFields.slideDown();
+                            this._view.downloadUrlDetailsFields.fadeIn();
                         }
+                        this._view.downloadFileBrowserPanel.fadeIn();
                     }else{
                         alert("Ooops! Something bad. ("+statusCode+")");
                     }
                     this._unlockUI();
                 }.bind(this));
             }
+        }.bind(me));
+
+        this._view.downloadFileBtn.on('click', function () {
+
+            var fileName = me._view.downloadFileNameEdit.val().trim() + "." + me._view.downloadFileExtEdit.val().trim();
+            var distFolder = me._downloadBrowserView.getOpenFolder();
+            var link = this._view.downloadFileUrlLink.attr("href");
+
+            if (distFolder==null) {
+                this._view.downloadFileInfoLabel.text("Please select destination folder.")
+                this._view.downloadFileInfoLabel.slideDown().delay(1000).fadeOut(400);
+                return;
+            }
+
+            if (fileName==".") {
+                this._view.downloadFileInfoLabel.text("Please select file name.")
+                this._view.downloadFileInfoLabel.slideDown().delay(1000).fadeOut(400);
+                return;
+            }
+            this._lockUI();
+            this._model.addTask({
+                type:"download",
+                url:link,
+                dst:distFolder,
+                name:fileName
+            }, function(){
+                this._unlockUI();
+                for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
+                    this._view.downloadUrlDetailsFields.slideDown();
+                }
+                this._view.downloadFileBrowserPanel.slideDown();
+            }.bind(this), function(){
+                alert("Ooops. Something bad...")
+                this._unlockUI();
+            }.bind(this));
         }.bind(me));
 
     },
@@ -314,6 +413,7 @@ var PresenterPrototype = {
 
     _initiateModelUpdate : function() {
         this._rootBrowserView.moveToRoot();
+        this._downloadBrowserView.moveToRoot();
         this._model.requestPeriodicalStorageUpdate(function(storages){
             //render storage
             this._view.storageBrowserList.empty();
