@@ -298,7 +298,6 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private byte[] buffer = null;
         private long estimationTimeBuffer = 0;
         private AverageCalculator speedCalc = new AverageCalculator(12);
-        private AverageCalculator chunkCalc = new AverageCalculator(100);
 
         protected StreamCopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun, Logger log) {
             super(postExecutionAction,task, isCleanRun, log);
@@ -354,27 +353,15 @@ public class ExecutionManagerImpl implements ExecutionManager{
             return true;
         }
 
-        @Override
-        protected long getApproximatelyStepCount() {
-            return calculateByteCount(totalByteCount, DEFAULT_CHUNK_SIZE);
-        }
 
-        private long calculateByteCount(long byteToConsume, long approximatelyChunk) {
-            if (byteToConsume <= 0) return 1;
-            if (totalByteCount % approximatelyChunk != 0) {
-                return byteToConsume / approximatelyChunk + 1;
-            } else {
-                return byteToConsume / approximatelyChunk;
-            }
-        }
-
+        private int step = 0;
         @Override
-        protected long execute(long step, long stepCount) {
+        protected boolean execute() {
             int readCount = -1;
             try {
                 readCount = is.read(buffer, 0, buffer.length);
                 if (readCount <= 0)
-                    return 0;
+                    return true;
                 os.write(buffer,0,readCount);
                 readedByteCount += readCount;
                 estimationTimeBuffer += readCount;
@@ -383,20 +370,31 @@ public class ExecutionManagerImpl implements ExecutionManager{
                         double timeDelta = (double)(System.currentTimeMillis() - startTime);
                         if(timeDelta == 0) timeDelta = 1000;
                         double speed = (double)estimationTimeBuffer / (double)timeDelta;
-                        long endTime = Math.round((totalByteCount - readedByteCount)/speedCalc.putAndGet(speed));
-                        publishCopyStatistic(speed, endTime);
+                        speedCalc.put(speed);
                     }
                     startTime = System.currentTimeMillis();
                     estimationTimeBuffer = 0;
                 }
+                long endTime = Math.round((totalByteCount - readedByteCount)/speedCalc.get());
+                publishCopyStatistic(speedCalc.get(), endTime);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            return calculateByteCount(totalByteCount-readedByteCount, (long) chunkCalc.putAndGet(readCount));
+            step++;
+            return false;
         }
 
-
-
+        @Override
+        final protected Float calculateCurrentProgress() {
+            //Unknown how much bytes to read
+            if (totalByteCount < 1) return 0.5f;
+            float progress = (1/(float)totalByteCount * (float)readedByteCount);
+            //If read more then expected
+            if (progress>1f){
+                progress = 0.9f;
+            }
+            return progress;
+        }
 
         protected abstract void publishCopyStatistic(double speed, long endTime);
         protected abstract OutputStream getWriteStream() throws IOException;
@@ -449,15 +447,11 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 }
                 log.info("[Task = {}] Allocate resources", task.getRef());
                 allocateResources();
-                long stepCount = getApproximatelyStepCount()+1;
-                boolean finished = false; long currentStep=0;
+                boolean finished = false;
                 while(!finished){
-                    log.debug("[Task = {}] Executing step {} of {} ...", task.getRef(), currentStep, stepCount);
-                    long requestedStepCount = execute(currentStep,stepCount);
-                    finished = requestedStepCount == 0;
-                    stepCount = currentStep + requestedStepCount;
-                    float currentProgress = 1 / ((float)stepCount) * ((float)currentStep+1);
-                    setProgress(currentProgress);
+                    finished = execute();
+                    log.debug("[Task = {}] Executing progress {} ...", task.getRef(), getProgress());
+                    setProgress(calculateCurrentProgress());
                     if (Thread.currentThread().isInterrupted()){
                         log.warn("[Task = {}] was interrupted ...", task.getRef());
                         throw new InterruptedException();
@@ -467,13 +461,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                         log.warn("[Task = {}] was killed ...", task.getRef());
                         throw new InterruptedException("killed");
                     }
-
-                    if (currentStep>=stepCount){
-                        stepCount++;
-                        log.warn("[Task = {}] increasing step count ...", task.getRef());
-                    }
-                    currentStep++;
-                }
+               }
                 log.info("[Task = {}] Execution done. Releasing resources", task.getRef());
                 releaseResources();
                 task.updateStatus(TaskModel.ExecutionStatus.Finished);
@@ -492,6 +480,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
             onFinish.apply(null);
         }
 
+        protected abstract Float calculateCurrentProgress();
+
         protected abstract void cleanupPreviousExecution();
 
         final public synchronized void publishStatistic(String key,Object value){
@@ -509,9 +499,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected boolean rollbackAndReleaseResources() {return false;}
 
-        protected abstract long getApproximatelyStepCount();
-
-        protected abstract long execute(long step, long stepCount);
+        protected abstract boolean execute();
 
         public abstract void initialize() throws ExecutionPendingException;
     }
