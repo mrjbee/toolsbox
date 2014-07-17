@@ -1,7 +1,7 @@
 package org.monroe.team.toolsbox.transport.rest;
 
 import org.monroe.team.toolsbox.us.ExploreDownloadUrlDefinition;
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
+import org.monroe.team.toolsbox.transport.TransportExceptions;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

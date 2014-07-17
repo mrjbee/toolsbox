@@ -3,7 +3,6 @@ import org.monroe.team.toolsbox.services.ConfigurationManager;
 import org.monroe.team.toolsbox.us.CreateCopyTaskDefinition;
 import org.monroe.team.toolsbox.us.CreateDownloadTaskDefinition;
 import org.monroe.team.toolsbox.us.StorageLookupDefinition;
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
 
 import javax.inject.Named;
 import java.util.Map;
@@ -41,5 +40,13 @@ public class Translator {
             throw new TransportExceptions.InvalidRequestException();
         }
         return new CreateDownloadTaskDefinition.DownloadTaskCreationRequest(dstFileID,url,fileName);
+    }
+
+    public Integer toIntegerId(String id) {
+        try{
+            return Integer.parseInt(id);
+        }catch (Exception e){
+            throw new TransportExceptions.InvalidRequestException(e);
+        }
     }
 }

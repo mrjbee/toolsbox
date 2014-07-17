@@ -137,6 +137,25 @@ public class FileModelImpl implements FileModel{
         return (isDirectory())?0:asFile().length();
     }
 
+    @Override
+    public void delete() {
+        if (!isExistsLocally()) throw new RuntimeException("File not found");
+        if(isStorageRoot() || !asFile().delete()){
+            throw new RuntimeException("Couldn`t delete file");
+        }
+    }
+
+    @Override
+    public FileModel renameTo(String fileName) {
+        if (!isExistsLocally()) throw new RuntimeException("File not found");
+        if (!isStorageRoot()) throw new RuntimeException("Couldn`t rename storage root");
+        FileModel newFile = getParent().createFile(fileName);
+        if(!asFile().renameTo(newFile.asFile())){
+            throw new RuntimeException("Couldn`t delete file");
+        }
+        return newFile;
+    }
+
     private File createLocalFileWithName(String simpleName) {
         return new File(asFile(), simpleName);
     }

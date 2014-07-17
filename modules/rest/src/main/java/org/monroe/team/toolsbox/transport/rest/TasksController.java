@@ -2,7 +2,7 @@ package org.monroe.team.toolsbox.transport.rest;
 
 import org.monroe.team.toolsbox.transport.Translator;
 import org.monroe.team.toolsbox.us.*;
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
+import org.monroe.team.toolsbox.transport.TransportExceptions;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;

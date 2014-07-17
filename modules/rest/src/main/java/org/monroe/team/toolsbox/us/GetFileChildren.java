@@ -8,7 +8,7 @@ import org.monroe.team.toolsbox.repositories.FileDescriptorRepository;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.Files;
 import org.monroe.team.toolsbox.services.IdTranslator;
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
+import org.monroe.team.toolsbox.transport.TransportExceptions;
 import org.monroe.team.toolsbox.us.common.FileResponse;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.springframework.transaction.annotation.Transactional;

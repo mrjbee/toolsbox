@@ -1,10 +1,12 @@
-package org.monroe.team.toolsbox.us.common;
+package org.monroe.team.toolsbox.transport;
 
 
 import org.monroe.team.toolsbox.transport.rest.RestExceptions;
 import org.springframework.http.HttpStatus;
 
 final public class TransportExceptions {
+
+    private TransportExceptions() {}
 
     public static class IdNotFoundException extends RestExceptions.DetailedRestException {
 
@@ -25,6 +27,10 @@ final public class TransportExceptions {
 
         public InvalidRequestException() {
             super(HttpStatus.BAD_REQUEST,"bad_format");
+        }
+
+        public InvalidRequestException(Throwable cause) {
+            super(HttpStatus.BAD_REQUEST,"bad_format","", cause);
         }
     }
 

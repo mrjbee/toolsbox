@@ -1,6 +1,6 @@
 package org.monroe.team.toolsbox.services;
 
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
+import org.monroe.team.toolsbox.transport.TransportExceptions;
 
 import javax.inject.Named;
 

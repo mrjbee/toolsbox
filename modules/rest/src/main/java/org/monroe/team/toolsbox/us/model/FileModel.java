@@ -33,4 +33,8 @@ public interface FileModel {
     InputStream openReadStream() throws IOException;
 
     long getByteSize();
+
+    void delete();
+
+    FileModel renameTo(String fileName);
 }

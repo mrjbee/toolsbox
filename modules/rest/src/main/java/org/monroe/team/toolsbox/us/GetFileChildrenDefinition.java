@@ -1,6 +1,6 @@
 package org.monroe.team.toolsbox.us;
 
-import org.monroe.team.toolsbox.us.common.TransportExceptions;
+import org.monroe.team.toolsbox.transport.TransportExceptions;
 import org.monroe.team.toolsbox.us.common.FileResponse;
 
 import java.util.List;
