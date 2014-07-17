@@ -10,15 +10,17 @@ public class TaskResponse {
     public final String type;
     public final String endDate;
     public final Float progress;
+    public final String awaitingReason;
     public final Map<String, String> details;
 
 
-    public TaskResponse(Integer taskId, String status, String type, String endDate, Float progress) {
+    public TaskResponse(Integer taskId, String status, String type, String endDate, Float progress, String awaitingReason) {
         this.taskId = taskId;
         this.status = status;
         this.type = type;
         this.endDate = endDate;
         this.progress = progress;
+        this.awaitingReason = awaitingReason;
         this.details = new HashMap<String, String>();
     }
 

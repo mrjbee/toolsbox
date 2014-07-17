@@ -22,9 +22,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,14 +57,14 @@ public class ExecutionManagerImpl implements ExecutionManager{
     }
 
     @Override
-    public synchronized void executeAsCopyTask(final TaskModel taskModel, boolean restart) throws ExecutionUnavailableException {
+    public synchronized void executeAsCopyTask(final TaskModel taskModel, boolean restart) throws ExecutionPendingException {
         final FileModel srcFile = taskModel.getProperty("src", FileModel.class);
         final FileModel dstFile = taskModel.getProperty("dst", FileModel.class);
         if (!srcFile.isExistsLocally() || !dstFile.isExistsLocally()) {
-            throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.no_file);
+            throw new ExecutionPendingException(ExecutionPendingException.Reason.no_file);
         }
         if (isDevicesBusyForNewRead(srcFile.getStorage()) || isDevicesBusyForNewWrite(dstFile.getStorage())){
-            throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.device_is_busy);
+            throw new ExecutionPendingException(ExecutionPendingException.Reason.device_is_busy);
         }
 
         final int readDeviceId = srcFile.getStorage().getDeviceId();
@@ -91,10 +89,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
     }
 
     @Override
-    public void executeAsDownloadTask(final TaskModelImpl taskModel, boolean restart) throws ExecutionUnavailableException {
+    public void executeAsDownloadTask(final TaskModelImpl taskModel, boolean restart) throws ExecutionPendingException {
         final FileModel dstFolder = taskModel.getProperty("dst", FileModel.class);
         if (!dstFolder.isExistsLocally()) {
-            throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.no_file);
+            throw new ExecutionPendingException(ExecutionPendingException.Reason.no_file);
         }
         final BaseExecution execution = new DownloadExecution(new Function<Void, Void>() {
             @Override
@@ -190,7 +188,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
 
         @Override
-        protected void releaseResources() throws ExecutionUnavailableException {
+        protected void releaseResources() {
             super.releaseResources();
             //Close HTTP Connection
             if (httpclient != null){
@@ -200,7 +198,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 } catch (IOException e) {
                     log.warn("[Task ="+getTask().getRef()+"] Error during releasing HTTP resources",e);
                     httpclient = null;
-                    throw new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
+                    throw new RuntimeException("Exception during closing HTTP client",e);
                 }
             }
         }
@@ -222,7 +220,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        public void initialize() throws ExecutionUnavailableException {
+        public void initialize() throws ExecutionPendingException {
             dstFolder = getTask().getProperty("dst", FileModel.class);
             dstFile = dstFolder.createFile(getTask().getProperty("fileName", String.class));
             url = getTask().getProperty("url",String.class);
@@ -242,7 +240,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        public void initialize() throws ExecutionUnavailableException {
+        public void initialize() throws ExecutionPendingException {
             srcFile = getTask().getProperty("src", FileModel.class);
             dstFolder = getTask().getProperty("dst", FileModel.class);
             dstFile = dstFolder.createFile(srcFile.getSimpleName());
@@ -307,51 +305,50 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        protected void allocateResources() throws ExecutionUnavailableException {
+        protected void allocateResources() {
             buffer = new byte[DEFAULT_CHUNK_SIZE];
-            ExecutionUnavailableException errors = new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
-            boolean doThrow = false;
             try {
                 os = getWriteStream();
             } catch (IOException e) {
                 log.warn("[Task =" + getTask().getRef() + "] Error during allocating resources", e);
-                doThrow = true;
+                throw new RuntimeException(e);
             }
 
             try {
                 is = getReadStream();
             } catch (IOException e) {
                 log.warn("[Task =" + getTask().getRef() + "] Error during allocating resources", e);
-                doThrow = true;
+                throw new RuntimeException(e);
             }
 
-            if (doThrow) throw errors;
             totalByteCount = getCopyByteCount();
         }
 
 
         @Override
-        protected void releaseResources() throws ExecutionUnavailableException {
+        protected void releaseResources()  {
             buffer = null;
-            ExecutionUnavailableException errors = new ExecutionUnavailableException(ExecutionUnavailableException.Reason.execution);
-            boolean doThrow =false;
+            RuntimeException ex = null;
+
             try {
                 if (os != null) os.close();
             } catch (IOException e) {
                 log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                doThrow = true;
+                ex = new RuntimeException(e);
             }
+
             try {
                 if(is != null) is.close();
             } catch (IOException e) {
                 log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                doThrow = true;
+                ex = new RuntimeException(e);
             }
-            if(doThrow) throw errors;
+
+            if(ex != null) throw ex;
         }
 
         @Override
-        protected boolean rollbackAndReleaseResources() throws ExecutionUnavailableException {
+        protected boolean rollbackAndReleaseResources() {
             releaseResources();
             cleanupPreviousExecution();
             return true;
@@ -506,17 +503,17 @@ public class ExecutionManagerImpl implements ExecutionManager{
             return statisticMap.get(key);
         }
 
-        protected abstract void allocateResources() throws ExecutionUnavailableException;
+        protected abstract void allocateResources();
 
-        protected abstract void releaseResources() throws ExecutionUnavailableException;
+        protected abstract void releaseResources();
 
-        protected boolean rollbackAndReleaseResources() throws ExecutionUnavailableException {return false;}
+        protected boolean rollbackAndReleaseResources() {return false;}
 
         protected abstract long getApproximatelyStepCount();
 
         protected abstract long execute(long step, long stepCount);
 
-        public abstract void initialize() throws ExecutionUnavailableException;
+        public abstract void initialize() throws ExecutionPendingException;
     }
 
 }

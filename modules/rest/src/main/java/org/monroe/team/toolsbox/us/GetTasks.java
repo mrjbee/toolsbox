@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.Logger;
-import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.FileManager;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.common.TaskResponse;
@@ -40,7 +39,8 @@ public class GetTasks implements GetTasksDefinition{
                         task.getStatusAsString(),
                         task.getTypeAsString(),
                         task.getEstimationDateString(),
-                        task.getExecutionProgress());
+                        task.getExecutionProgress(),
+                        task.getPendingReason());
                 taskResponse.with("speed",task.getExecutionSpeed());
 
                 switch (task.getType()){

@@ -20,9 +20,9 @@ public interface TaskModel {
 
     <Type> Type getProperty(String src, Class<Type> requestedType);
 
-    boolean execute() throws ExecutionManager.ExecutionUnavailableException;
+    boolean execute() throws ExecutionManager.ExecutionPendingException;
 
-    boolean restart() throws ExecutionManager.ExecutionUnavailableException;
+    boolean restart() throws ExecutionManager.ExecutionPendingException;
 
     void updateStatus(ExecutionStatus progress);
 
@@ -36,12 +36,21 @@ public interface TaskModel {
 
     String getExecutionSpeed();
 
+    void setPendingReason(String reason);
+
+    String getPendingReason();
+
     public static enum Type{
         COPY, TRANSFER, DOWNLOAD, DELETE
     }
 
     public static enum ExecutionStatus {
-        Pending, Progress, Finished, Fails, Killed
+
+        Pending, Progress, Finished, Fails, Killed, Restoring;
+
+        public static boolean isExecutionAwaiting(ExecutionStatus status) {
+            return Pending.equals(status) || Restoring.equals(status);
+        }
     }
 
 }

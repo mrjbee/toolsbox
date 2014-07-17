@@ -6,15 +6,16 @@ import org.monroe.team.toolsbox.us.model.impl.TaskModelImpl;
 
 public interface ExecutionManager {
 
-    void executeAsCopyTask(TaskModel taskModel, boolean restart) throws ExecutionUnavailableException;
-    void executeAsDownloadTask(TaskModelImpl taskModel, boolean restart) throws ExecutionUnavailableException;
+    void executeAsCopyTask(TaskModel taskModel, boolean restart) throws ExecutionPendingException;
+    void executeAsDownloadTask(TaskModelImpl taskModel, boolean restart) throws ExecutionPendingException;
+
     Execution getTaskExecution(Integer taskId);
 
-    public static class ExecutionUnavailableException extends Exception {
+    public static class ExecutionPendingException extends Exception {
 
         public final Reason reason;
 
-        public ExecutionUnavailableException(Reason reason) {
+        public ExecutionPendingException(Reason reason) {
             super(reason.humanDescription);
             this.reason = reason;
         }
@@ -22,14 +23,17 @@ public interface ExecutionManager {
         public static enum Reason {
 
             device_is_busy("All threads are busy"),
-            no_file("No file available"),
-            file_exists("File Already Exists"),
-            execution("Error during execution");
+            no_file("No file available");
 
             public final String humanDescription;
 
             Reason(String humanDescription) {
                 this.humanDescription = humanDescription;
+            }
+
+            @Override
+            public String toString() {
+                return name()+" ["+humanDescription+"]";
             }
         }
     }

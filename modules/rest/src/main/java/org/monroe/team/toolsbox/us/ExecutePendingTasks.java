@@ -1,12 +1,9 @@
 package org.monroe.team.toolsbox.us;
 
 import org.apache.logging.log4j.Logger;
-import org.monroe.team.toolsbox.entities.Task;
-import org.monroe.team.toolsbox.logging.Logs;
 import org.monroe.team.toolsbox.services.ExecutionManager;
 import org.monroe.team.toolsbox.services.TaskManager;
 import org.monroe.team.toolsbox.us.model.TaskModel;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -29,31 +26,31 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
     @Override
     public void perform() {
         List<TaskModel> tasks = manager.fetchAll();
-
-        coreLog.info("Fetching tasks. Total count:" + tasks.size());
+        coreLog.debug("Fetching tasks. Total count:" + tasks.size());
         for(TaskModel task:tasks){
             coreLog.debug("Processing task. task:" + task);
             if (task.isHardInterrupted()){
-                coreLog.info("Processing task. task:" + task);
+                log.info("[Task = {}] Marked as hard interrupted.",task.getRef());
+                task.updateStatus(TaskModel.ExecutionStatus.Restoring);
+            }
+
+            if (TaskModel.ExecutionStatus.Pending.equals(task.getStatus()) ||
+                    TaskModel.ExecutionStatus.Restoring.equals(task.getStatus()) ) {
                 try {
-                    log.info("[Task = {}] Restarting as hard interrupted.",task.getRef());
-                    task.restart();
-                } catch (ExecutionManager.ExecutionUnavailableException e) {
-                    log.warn("[Task = " + task.getRef()+"] Fails! Restarting hard interrupted", e);
-                }
-            } else {
-                coreLog.info("Processing task. task:" + task);
-                if (TaskModel.ExecutionStatus.Pending.equals(task.getStatus())) {
-                    try {
-                        log.info("[Task = {} ] Scheduling pending task",task.getRef());
+                    log.info("[Task = {} ] Scheduling pending task",task.getRef());
+                    if(TaskModel.ExecutionStatus.Pending.equals(task.getStatus()))
+                        task.restart();
+                    else
                         task.execute();
-                    } catch (ExecutionManager.ExecutionUnavailableException e) {
-                        log.info("[Task = " + task.getRef()+"] Tasks execution unavailable. Reason: "+ e.reason);
-                    } catch (Exception e){
-                        log.warn("[Task = " + task.getRef() + "] Fails! Scheduling pending task.", e);
-                    }
+                } catch (ExecutionManager.ExecutionPendingException e) {
+                    log.info("[Task = " + task.getRef()+"] Tasks execution unavailable. Reason: "+ e.reason);
+                    task.setPendingReason(e.reason.name());
+                } catch (Exception e){
+                    log.warn("[Task = " + task.getRef() + "] Fails! Scheduling pending task.", e);
+                    task.updateStatus(TaskModel.ExecutionStatus.Fails);
                 }
             }
+
         }
     }
 }

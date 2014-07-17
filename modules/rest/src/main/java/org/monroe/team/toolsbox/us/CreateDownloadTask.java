@@ -19,6 +19,6 @@ public class CreateDownloadTask implements CreateDownloadTaskDefinition{
                 .withProperty("dst", request.dstFolder.toString())
                 .withProperty("url", request.url);
         //TODO: update wwith details if required
-        return new TaskResponse(taskModel.getRef(), null, null, null, null);
+        return new TaskResponse(taskModel.getRef(), null, null, null, null, null);
     }
 }

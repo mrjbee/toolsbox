@@ -28,6 +28,9 @@ public class Task {
     @OneToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     public List<Property> properties;
 
+    @Column
+    public String pendingReason;
+
     public <T> T getProperty(final String key, Class<T> type){
         Optional<Property> propertyHolder = Iterables.tryFind(properties, new Predicate<Property>() {
             @Override

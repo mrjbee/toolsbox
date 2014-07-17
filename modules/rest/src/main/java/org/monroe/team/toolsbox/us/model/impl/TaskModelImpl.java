@@ -79,6 +79,7 @@ public class TaskModelImpl implements TaskModel {
     public Float getExecutionProgress() {
         switch (getStatus()){
             case Pending: return 0f;
+            case Restoring: return 0f;
             case Finished: return 1f;
             case Fails: return 0.5f;
             case Progress:
@@ -100,13 +101,13 @@ public class TaskModelImpl implements TaskModel {
 
 
     @Override
-    public synchronized  boolean execute() throws ExecutionManager.ExecutionUnavailableException {
+    public synchronized  boolean execute() throws ExecutionManager.ExecutionPendingException {
         return executeImpl(false);
     }
 
 
     @Override
-    public synchronized boolean restart() throws ExecutionManager.ExecutionUnavailableException {
+    public synchronized boolean restart() throws ExecutionManager.ExecutionPendingException {
         return executeImpl(true);
     }
 
@@ -128,7 +129,7 @@ public class TaskModelImpl implements TaskModel {
         return true;
     }
 
-    private boolean executeImpl(boolean restart) throws ExecutionManager.ExecutionUnavailableException {
+    private boolean executeImpl(boolean restart) throws ExecutionManager.ExecutionPendingException {
         if (taskDependency.refresh() == null) return false;
         switch (getType()){
             case COPY:
@@ -144,9 +145,12 @@ public class TaskModelImpl implements TaskModel {
     }
 
     @Override
-    public void updateStatus(ExecutionStatus progress) {
+    public void updateStatus(ExecutionStatus status) {
         check(isHealthy());
-        taskDependency.get().status = progress;
+        taskDependency.get().status = status;
+        if (!ExecutionStatus.isExecutionAwaiting(status)){
+            taskDependency.get().pendingReason = null;
+        }
         taskDependency.save();
     }
 
@@ -173,6 +177,18 @@ public class TaskModelImpl implements TaskModel {
         }
 
 
+    }
+
+    @Override
+    public void setPendingReason(String reason) {
+         check(isHealthy());
+         taskDependency.get().pendingReason=reason;
+         taskDependency.save();
+    }
+
+    @Override
+    public String getPendingReason() {
+        return taskDependency.get().pendingReason;
     }
 
     private String convertSpeedToHuman(double speed) {
