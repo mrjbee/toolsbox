@@ -27,7 +27,7 @@ public class GlobalController {
     @ExceptionHandler(value = RestExceptions.RestException.class)
     public void onExpectedException(HttpServletResponse servletResponse, RestExceptions.RestException exception) throws Exception {
         log.info("Rest request ends with "+exception.status.value() +"["+exception.status.getReasonPhrase()+"]");
-        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.status.getReasonPhrase() + "]", exception);
+        log.info("Rest request ends with " + exception.status.value() + "[" + exception.status.getReasonPhrase() + "]", exception);
         checkIfRequiredRethrow(exception);
         servletResponse.sendError(exception.status.value(),exception.status.getReasonPhrase());
     }
@@ -39,7 +39,7 @@ public class GlobalController {
             HttpServletRequest request,HttpServletResponse servletResponse,
             RestExceptions.DetailedRestException exception) throws Exception {
         log.info("Rest request ends with "+exception.status.value() +"["+exception.label+":"+exception.msg+"]");
-        log.debug("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]", exception);
+        log.info("Rest request ends with " + exception.status.value() + "[" + exception.label + ":" + exception.msg + "]", exception);
         checkIfRequiredRethrow(exception);
 
         if (!"application/json".equals(request.getContentType())){
