@@ -100,6 +100,39 @@ var ModelPrototype = {
         }.bind(this))
     },
 
+    renameFileTo: function (newName, id, callback) {
+        this._doRequest({
+            type: "PUT",
+            url: this._serverUrl + '/file/'+id,
+            data: JSON.stringify({
+                name:newName
+            })
+        }, function (response) {
+            callback(response.statusCode == 200 || response.statusCode == 202);
+        }.bind(this))
+    },
+
+    createFolder: function (newName, id, callback) {
+        this._doRequest({
+            type: "POST",
+            url: this._serverUrl + '/file',
+            data: JSON.stringify({
+                parentRef:id,
+                name:newName
+            })
+        }, function (response) {
+            callback(response.statusCode == 200 || response.statusCode == 202);
+        }.bind(this))
+    },
+
+    deleteFile: function (id, callback) {
+        this._doRequest({
+            type: "DELETE",
+            url: this._serverUrl + '/file/'+id
+        }, function (response) {
+            callback(response.statusCode == 200 || response.statusCode == 202);
+        }.bind(this))
+    },
     requestPeriodicalTaskUpdate:function(onTasks){
         this.disablePeriodicalTaskUpdate();
         this._requestTasksDetails(onTasks);

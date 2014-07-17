@@ -8,6 +8,7 @@ var PresenterPrototype = {
     _downloadBrowserView: null,
     _taskWidgetFactory: null,
     _taskWidgets:{},
+    _scheduledNameFunction:null,
 
     constructor:function _constructor(model,view){
         var me = this;
@@ -98,6 +99,65 @@ var PresenterPrototype = {
             }.bind(this), 1000);
         }.bind(this));
 
+        this._view.renameTaskItem.click(function(){
+            this._closeActionPopup();
+            this._lockUI(false);
+            setTimeout(function(){
+                this._unlockUI();
+                this._scheduledNameFunction = function(newName){
+                    this._lockUI(false);
+                    this._model.renameFileTo(newName,this._model.selectedFile.id, function(result){
+                        if (!result){
+                            alert("Ooops! No luck.")
+                        }
+                        this._unlockUI();
+                    }.bind(this));
+                }.bind(this);
+                this._view.nameFormEdit.val(this._model.selectedFile.name);
+                this._view.nameDialog.popup("open");
+            }.bind(this), 1000);
+        }.bind(this));
+
+        this._view.nameFormOkBtn.on("click", function(){
+            this._view.nameDialog.popup("close");
+            this._scheduledNameFunction(this._view.nameFormEdit.val());
+        }.bind(this));
+
+        this._view.addFolderTopBtn.click(function(){
+            this._scheduledNameFunction = function(newName){
+                this._lockUI(false);
+                this._model.createFolder(newName,this._rootBrowserView.getOpenFolder().id, function(result){
+                    if (!result){
+                        alert("Ooops! No luck with new folder creation.")
+                    }
+                    this._unlockUI();
+                }.bind(this));
+            }.bind(this);
+            this._view.nameFormEdit.val("New Folder");
+            this._view.nameDialog.popup("open");
+        }.bind(this));
+
+        this._view.deleteTaskItem.click(function(){
+            this._closeActionPopup();
+            this._lockUI(false);
+            setTimeout(function(){
+                this._unlockUI();
+                this._view.deleteFileNameLabel.text(this._model.selectedFile.name);
+                this._view.deleteDialog.popup("open");
+            }.bind(this), 1000);
+        }.bind(this));
+
+        this._view.deleteFileOkBtn.on("click",function(){
+            this._view.deleteDialog.popup("close");
+            this._lockUI(false);
+            this._model.deleteFile(this._model.selectedFile.id, function(result){
+                if (!result){
+                    alert("Ooops! No luck with deletion.");
+                }
+                this._unlockUI();
+            }.bind(this));
+        }.bind(this));
+
         this._rootBrowserView = Object.create(FileBrowserPrototype);
         this._rootBrowserView.constructor({
             requestLoadingRendering : function () {me._lockUI(true)},
@@ -145,7 +205,6 @@ var PresenterPrototype = {
                     },function(event){
                         me._model.selectedFile = event.data.file;
                         me._view.copyTaskItem.slideUp();
-
                         me._view.taskChoosePopup.popup("open",{
                             x:event.clientX,
                             y:event.clientY,
