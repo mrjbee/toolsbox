@@ -75,7 +75,8 @@ var ModelPrototype = {
                     storagesAsFiles.push({
                         id:storages[index].refFileId,
                         name:storages[index].label,
-                        folder:true
+                        folder:true,
+                        storage:true
                     })
                 }
                 onSuccess(storagesAsFiles);

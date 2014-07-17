@@ -52,7 +52,9 @@
     <div data-role="popup" id="file-task-popup" data-theme="b" data-history="false">
         <ul data-role="listview" data-inset="true" style="min-width:210px;">
             <li data-role="list-divider">Choose an action</li>
-            <li><a id="copy-task-item" href="#">Copy ...</a></li>
+            <li><a id="rename-task-item" href="#">Rename to ...</a></li>
+            <li><a id="copy-task-item" href="#">Copy to...</a></li>
+            <li><a id="delete-task-item" href="#">Delete ...</a></li>
         </ul>
     </div>
 
@@ -69,22 +71,26 @@
                 </div>
             </div>
             <div class="top-panel ui-block-b ui-body-a ui-corner-all">
-                  <div data-role="tabs" id="tabs" >
+                  <div data-role="tabs" id="tabs">
                     <div data-role="navbar" id="navbar"  data-iconpos="left">
                         <ul>
-                            <li><a href="#one" data-icon="grid" data-ajax="false" class="ui-mini ui-btn-active " id="file-tab-btn">File Manger</a></li>
-                            <li><a href="#two" data-icon="cloud" data-ajax="false" class="ui-mini" id="download-tab-btn" >Download Manager</a></li>
-                            <li class="dognail-width"><a href="#three" data-icon="star" data-ajax="false" class="ui-mini" id="tasks-tab-btn" >Task Manager</a></li>
+                            <li><a style="z-index: 2" href="#one" data-icon="grid" data-ajax="false" class="ui-mini ui-btn-active " id="file-tab-btn">File Manger</a></li>
+                            <li><a style="z-index: 2" href="#two" data-icon="cloud" data-ajax="false" class="ui-mini" id="download-tab-btn" >Download Manager</a></li>
+                            <li class="dognail-width"><a style="z-index: 2" href="#three" data-icon="star" data-ajax="false" class="ui-mini" id="tasks-tab-btn" >Task Manager</a></li>
                         </ul>
                     </div>
                     <div id="one">
-                        <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon" id="file-browser-top-btn">Back to storage list</a>
-                        <div class="ui-body ui-body-a ui-corner-all">
-                            <ul data-role="listview" id="file-browser-list">
-                                <li data-role="list-divider">Fetching Storages ... </li>
-                            </ul>
-                        </div>
-
+                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:90%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
+                            <div data-role="controlgroup" data-theme="b" data-type="horizontal">
+                                <a href="#" style="display: none" class="ui-btn ui-mini ui-icon-plus ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="add-folder-top-btn">New...</a>
+                                <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="file-browser-top-btn">Back to storage list</a>
+                            </div>
+                        </fieldset>
+                             <div class="ui-body ui-body-a ui-corner-all">
+                                <ul data-role="listview" id="file-browser-list">
+                                    <li data-role="list-divider">Fetching Storages ... </li>
+                                </ul>
+                            </div>
                     </div>
                     <div id="two">
                         <div class="ui-body ui-body-a ui-corner-all">
@@ -127,7 +133,12 @@
                         </div>
                     </div>
                     <div id="three">
-                        <a href="#" class="ui-btn ui-mini ui-icon-arrow-u-r ui-btn-icon-left ui-nodisc-icon ui-alt-icon">Clear Task History</a>
+                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:90%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
+                            <div data-role="controlgroup" data-theme="b" data-type="horizontal">
+                                <a href="#" class="ui-btn ui-btn-b ui-mini ui-icon-arrow-u-r ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline">Clear Task History</a>
+                            </div>
+                        </fieldset>
+
                         <div class="ui-body ui-body-a ui-corner-all">
                             <div id="task-browser-list">
                             </div>

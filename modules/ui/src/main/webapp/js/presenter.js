@@ -116,6 +116,11 @@ var PresenterPrototype = {
                 liEl.attr("data-role","list-divider");
                 liEl.css("direction","rtl");
                 liEl.append(caption);
+                if (selectedFiles.length != 0){
+                    me._view.addFolderTopBtn.fadeIn();
+                } else {
+                    me._view.addFolderTopBtn.fadeOut();
+                }
                 return liEl;
             },
             renderFolder:function (itFolder, doOnTraverse){
@@ -129,7 +134,31 @@ var PresenterPrototype = {
                     browserCallBack:doOnTraverse
                 },function(event){
                     event.data.browserCallBack(event.data.file);
-                })
+                });
+                if (itFolder.name!=".." && !itFolder.storage){
+                    var actionEl = $(document.createElement("a"));
+                    actionEl.attr("data-split-icon","gear");
+                    liEl.append(actionEl);
+                    liEl.attr("data-icon","gear");
+                    actionEl.click({
+                        file:itFolder
+                    },function(event){
+                        me._model.selectedFile = event.data.file;
+                        me._view.copyTaskItem.slideUp();
+
+                        me._view.taskChoosePopup.popup("open",{
+                            x:event.clientX,
+                            y:event.clientY,
+                            positionTo: "origin",
+                            transition: "slideup"
+                        });
+                    }.bind(me));
+
+                } else {
+                    if (!itFolder.storage){
+                        liEl.attr("data-icon","back");
+                    }
+                }
                 return liEl;
             },
             renderFile : function (itFile) {
@@ -144,6 +173,7 @@ var PresenterPrototype = {
                         file:itFile
                     },function(event){
                         me._model.selectedFile = event.data.file;
+                        me._view.copyTaskItem.slideDown();
                         me._view.taskChoosePopup.popup("open",{
                             x:event.clientX,
                             y:event.clientY,
@@ -331,9 +361,9 @@ var PresenterPrototype = {
             }, function(){
                 this._unlockUI();
                 for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
-                    this._view.downloadUrlDetailsFields.slideDown();
+                    this._view.downloadUrlDetailsFields.slideUp();
                 }
-                this._view.downloadFileBrowserPanel.slideDown();
+                this._view.downloadFileBrowserPanel.slideUp();
             }.bind(this), function(){
                 alert("Ooops. Something bad...")
                 this._unlockUI();
