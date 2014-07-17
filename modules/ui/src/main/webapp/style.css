@@ -24,6 +24,12 @@
 	}
 }
 
+@media all and (max-width: 1000px) {
+    .dognail-width{
+        width: 100% !important;
+    }
+}
+
 
 @media all and (max-width: 400px) {
     .grid-value .ui-block-c,
