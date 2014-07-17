@@ -49,6 +49,14 @@ var FileBrowserPrototype = {
         this._moveToFile(storageAsFile);
     },
 
+    refresh:function(){
+        if(this.getOpenFolder()==null){
+            this.moveToRoot()
+        } else{
+            this._moveToFile(this.getOpenFolder());
+        }
+    },
+
     _moveToFile: function(file){
         this._uiDelegate.requestLoadingRendering();
         this._dataProvider.getSubFiles(file, function(files){

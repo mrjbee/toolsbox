@@ -108,9 +108,10 @@ var PresenterPrototype = {
                     this._lockUI(false);
                     this._model.renameFileTo(newName,this._model.selectedFile.id, function(result){
                         if (!result){
-                            alert("Ooops! No luck.")
+                            alert("Ooops! No luck with renaming.")
                         }
                         this._unlockUI();
+                        this._rootBrowserView.refresh();
                     }.bind(this));
                 }.bind(this);
                 this._view.nameFormEdit.val(this._model.selectedFile.name);
@@ -131,6 +132,7 @@ var PresenterPrototype = {
                         alert("Ooops! No luck with new folder creation.")
                     }
                     this._unlockUI();
+                    this._rootBrowserView.refresh();
                 }.bind(this));
             }.bind(this);
             this._view.nameFormEdit.val("New Folder");
@@ -155,6 +157,7 @@ var PresenterPrototype = {
                     alert("Ooops! No luck with deletion.");
                 }
                 this._unlockUI();
+                this._rootBrowserView.refresh();
             }.bind(this));
         }.bind(this));
 
