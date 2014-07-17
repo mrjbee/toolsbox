@@ -1,7 +1,6 @@
 package org.monroe.team.toolsbox.services.impl;
 
 import com.google.common.base.Function;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -11,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.monroe.team.toolsbox.entities.Execution;
 import org.monroe.team.toolsbox.services.ExecutionManager;
 import org.monroe.team.toolsbox.services.Files;
-import org.monroe.team.toolsbox.us.ExploreDownloadUrlDefinition;
+import org.monroe.team.toolsbox.transport.AverageCalculator;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.StorageModel;
 import org.monroe.team.toolsbox.us.model.TaskModel;
@@ -295,12 +294,13 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         private InputStream is;
         private OutputStream os;
-        private long fileSizeByteCount = 0;
+        private long totalByteCount = 0;
         private long startTime = 0;
-        private long processedByteCount = 0;
+        private long readedByteCount = 0;
         private byte[] buffer = null;
         private long estimationTimeBuffer = 0;
-        private List<Double> lastSpeedList = new ArrayList<Double>(5);
+        private AverageCalculator speedCalc = new AverageCalculator(12);
+        private AverageCalculator chunkCalc = new AverageCalculator(100);
 
         protected StreamCopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun, Logger log) {
             super(postExecutionAction,task, isCleanRun, log);
@@ -326,7 +326,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
             }
 
             if (doThrow) throw errors;
-            fileSizeByteCount = getCopyByteCount();
+            totalByteCount = getCopyByteCount();
         }
 
 
@@ -359,29 +359,34 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected long getApproximatelyStepCount() {
-            if (fileSizeByteCount % DEFAULT_CHUNK_SIZE!=0) {
-                return fileSizeByteCount / DEFAULT_CHUNK_SIZE + 1;
+            return calculateByteCount(totalByteCount, DEFAULT_CHUNK_SIZE);
+        }
+
+        private long calculateByteCount(long byteToConsume, long approximatelyChunk) {
+            if (byteToConsume <= 0) return 1;
+            if (totalByteCount % approximatelyChunk != 0) {
+                return byteToConsume / approximatelyChunk + 1;
             } else {
-                return fileSizeByteCount / DEFAULT_CHUNK_SIZE;
+                return byteToConsume / approximatelyChunk;
             }
         }
 
         @Override
-        protected boolean execute(long step, long stepCount) {
+        protected long execute(long step, long stepCount) {
+            int readCount = -1;
             try {
-                int readCount = is.read(buffer, 0, buffer.length);
+                readCount = is.read(buffer, 0, buffer.length);
                 if (readCount <= 0)
-                    return true;
+                    return 0;
                 os.write(buffer,0,readCount);
-                processedByteCount+=readCount;
-                estimationTimeBuffer +=readCount;
-                if (step % 2000 == 0){
+                readedByteCount += readCount;
+                estimationTimeBuffer += readCount;
+                if (step % 1000 == 0){
                     if (startTime != 0) {
                         double timeDelta = (double)(System.currentTimeMillis() - startTime);
                         if(timeDelta == 0) timeDelta = 1000;
                         double speed = (double)estimationTimeBuffer / (double)timeDelta;
-                        putSpeed(speed);
-                        long endTime = Math.round((fileSizeByteCount - processedByteCount)/getSpeed());
+                        long endTime = Math.round((totalByteCount - readedByteCount)/speedCalc.putAndGet(speed));
                         publishCopyStatistic(speed, endTime);
                     }
                     startTime = System.currentTimeMillis();
@@ -390,25 +395,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            return false;
+            return calculateByteCount(totalByteCount-readedByteCount, (long) chunkCalc.putAndGet(readCount));
         }
 
 
-        private synchronized double getSpeed() {
-            if (lastSpeedList.isEmpty()) return 0;
-            double averageSpeed = 0;
-            for (Double speed : lastSpeedList) {
-                averageSpeed += speed;
-            }
-            return averageSpeed/ lastSpeedList.size();
-        }
-
-        private synchronized void putSpeed(double speed) {
-            lastSpeedList.add(speed);
-            if (lastSpeedList.size() > 5){
-                lastSpeedList.remove((int)0);
-            }
-        }
 
 
         protected abstract void publishCopyStatistic(double speed, long endTime);
@@ -466,7 +456,9 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 boolean finished = false; long currentStep=0;
                 while(!finished){
                     log.debug("[Task = {}] Executing step {} of {} ...", task.getRef(), currentStep, stepCount);
-                    finished = execute(currentStep,stepCount);
+                    long requestedStepCount = execute(currentStep,stepCount);
+                    finished = requestedStepCount == 0;
+                    stepCount = currentStep + requestedStepCount;
                     float currentProgress = 1 / ((float)stepCount) * ((float)currentStep+1);
                     setProgress(currentProgress);
                     if (Thread.currentThread().isInterrupted()){
@@ -522,7 +514,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected abstract long getApproximatelyStepCount();
 
-        protected abstract boolean execute(long step, long stepCount);
+        protected abstract long execute(long step, long stepCount);
 
         public abstract void initialize() throws ExecutionUnavailableException;
     }

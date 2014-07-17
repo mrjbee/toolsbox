@@ -14,7 +14,7 @@ public class Property {
     @Column(nullable = false)
     public String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2000)
     public String value;
 
     public Property() {}

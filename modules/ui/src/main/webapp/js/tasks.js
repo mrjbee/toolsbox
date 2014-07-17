@@ -2,8 +2,19 @@ var TaskWidgetFactoryPrototype = {
     createFor:function(task,presenter){
         var widget;
         if (task.type == "COPY"){
-            widget = Object.create(CopyTaskWidgetPrototype);
-            widget.constructor(task,presenter);
+            widget = Object.create(GenericTaskWidgetPrototype);
+            widget.constructor(task,presenter,{
+                renderBody:function(body, task){
+                    body.append("<b>Copy</b> <span class='raw-data'>"+task.details["src"]+"</span> in to <span class='raw-data'>"+task.details["dst"]+"</span>");
+                }
+            });
+        } else if (task.type == "DOWNLOAD"){
+            widget = Object.create(GenericTaskWidgetPrototype);
+            widget.constructor(task,presenter,{
+                renderBody:function(body, task){
+                    body.append("<b>Download</b> <span class='raw-data'>"+task.details["name"]+"</span> in to <span class='raw-data'>"+task.details["dst"]+"</span>");
+                }
+            });
         } else {
             throw Error("Unsupported type:"+task.type)
         }
@@ -12,7 +23,7 @@ var TaskWidgetFactoryPrototype = {
     }
 };
 
-var CopyTaskWidgetPrototype = {
+var GenericTaskWidgetPrototype = {
 
     _task:null,
     _content:null,
@@ -24,10 +35,12 @@ var CopyTaskWidgetPrototype = {
     _header:null,
     _actionBtn:null,
     _owner:null,
+    _renderer:null,
 
-    constructor : function(taskToRef,owner){
+    constructor : function(taskToRef,owner,renderer){
         this._task = taskToRef;
         this._owner=owner;
+        this._renderer = renderer;
     },
 
 
@@ -113,11 +126,10 @@ var CopyTaskWidgetPrototype = {
         filedset.append(caption);
         filedset.append(this._progressbar);
 
-        //<a href="#" class="ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all">No text</a>
-
         this._header.append(filedset);
         body.append(this._actionBtn);
-        body.append("<b>Copy</b> <span class='raw-data'>"+this._task.details["src"]+"</span> in to <span class='raw-data'>"+this._task.details["dst"]+"</span>");
+
+        this._renderer.renderBody(body,this._task);
 
         var statusLabel = $(document.createElement("label"));
         this._statusLabel = $(document.createElement("span")).addClass("raw-data");

@@ -326,7 +326,7 @@ var PresenterPrototype = {
             this._model.addTask({
                 type:"download",
                 url:link,
-                dst:distFolder,
+                dst:distFolder.id,
                 name:fileName
             }, function(){
                 this._unlockUI();
