@@ -35,6 +35,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private Map <Integer, Execution> currentExecutionsMap = new HashMap<Integer, Execution>();
     private Map <Integer, Integer> readThreadsPerDeviceMap = new HashMap<Integer, Integer>();
     private Map <Integer, Integer> writeThreadsPerDeviceMap = new HashMap<Integer, Integer>();
+    private static final int DOWNLOAD_AT_ONCE_MAX = 2;
+    private int activeDownloadCount = 0;
 
     @Resource(name="task") Logger taskLog;
     @Resource(name="core") Logger logCore;
@@ -98,11 +100,15 @@ public class ExecutionManagerImpl implements ExecutionManager{
             @Override
             public Void apply(Void input) {
                 taskLog.info("Free resources for task = {}", taskModel.getRef());
+                captureResourceForDownloading(-1);
                 currentExecutionsMap.remove(taskModel.getRef());
                 return null;
             }
         },taskModel, !restart, taskLog);
         taskLog.info("Capture resources for task = {}", taskModel.getRef());
+        if(!captureResourceForDownloading(1)){
+            throw new ExecutionPendingException(ExecutionPendingException.Reason.max_download);
+        }
         execution.initialize();
         taskLog.info("Registering execution of task = {} :"+this.toString(), taskModel.getRef());
         currentExecutionsMap.put(taskModel.getRef(),execution);
@@ -118,6 +124,14 @@ public class ExecutionManagerImpl implements ExecutionManager{
     private synchronized void captureThreads(int readFromStorage, int writeToStorage) {
         indexThreads(readFromStorage, readThreadsPerDeviceMap, 1);
         indexThreads(writeToStorage, writeThreadsPerDeviceMap, 1);
+    }
+
+    private synchronized boolean captureResourceForDownloading(int delta){
+        if ((activeDownloadCount+delta)<=DOWNLOAD_AT_ONCE_MAX){
+            activeDownloadCount+=delta;
+            return true;
+        }
+        return false;
     }
 
     private void indexThreads(int deviceId, Map<Integer, Integer> threadPerDeviceMap, int delta) {

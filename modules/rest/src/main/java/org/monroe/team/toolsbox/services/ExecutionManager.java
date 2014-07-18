@@ -22,8 +22,9 @@ public interface ExecutionManager {
 
         public static enum Reason {
 
-            device_is_busy("All threads are busy"),
-            no_file("No file available");
+            device_is_busy("All device are busy"),
+            no_file("No file available"),
+            max_download("Max downloads at once");
 
             public final String humanDescription;
 
