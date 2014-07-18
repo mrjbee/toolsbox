@@ -38,7 +38,7 @@ public class ExecutePendingTasks implements ExecutePendingTasksDefinition{
                     TaskModel.ExecutionStatus.Restoring.equals(task.getStatus()) ) {
                 try {
                     log.info("[Task = {} ] Scheduling pending task",task.getRef());
-                    if(TaskModel.ExecutionStatus.Pending.equals(task.getStatus()))
+                    if(!TaskModel.ExecutionStatus.Pending.equals(task.getStatus()))
                         task.restart();
                     else
                         task.execute();

@@ -99,8 +99,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
         final BaseExecution execution = new DownloadExecution(new Function<Void, Void>() {
             @Override
             public Void apply(Void input) {
-                taskLog.info("Free resources for task = {}", taskModel.getRef());
-                captureResourceForDownloading(-1);
+                boolean free = captureResourceForDownloading(1);
+                taskLog.info("[Task = {}]Free resources for task = {}", taskModel.getRef(),free);
                 currentExecutionsMap.remove(taskModel.getRef());
                 return null;
             }
