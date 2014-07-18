@@ -82,8 +82,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
             }
         },taskModel, !restart, taskLog);
         taskLog.info("Capture resources for task = {}", taskModel.getRef());
+        execution.checkResources();
         captureThreads(readDeviceId, writeDeviceId);
-        execution.initialize();
         taskLog.info("Registering execution of task = {} :"+this.toString(), taskModel.getRef());
         currentExecutionsMap.put(taskModel.getRef(),execution);
         taskModel.updateStatus(TaskModel.ExecutionStatus.Progress);
@@ -99,17 +99,17 @@ public class ExecutionManagerImpl implements ExecutionManager{
         final BaseExecution execution = new DownloadExecution(new Function<Void, Void>() {
             @Override
             public Void apply(Void input) {
-                boolean free = captureResourceForDownloading(1);
+                boolean free = captureResourceForDownloading(-1);
                 taskLog.info("[Task = {}]Free resources for task = {}", taskModel.getRef(),free);
                 currentExecutionsMap.remove(taskModel.getRef());
                 return null;
             }
         },taskModel, !restart, taskLog);
         taskLog.info("Capture resources for task = {}", taskModel.getRef());
+        execution.checkResources();
         if(!captureResourceForDownloading(1)){
             throw new ExecutionPendingException(ExecutionPendingException.Reason.max_download);
         }
-        execution.initialize();
         taskLog.info("Registering execution of task = {} :"+this.toString(), taskModel.getRef());
         currentExecutionsMap.put(taskModel.getRef(),execution);
         taskModel.updateStatus(TaskModel.ExecutionStatus.Progress);
@@ -193,6 +193,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 throw new RuntimeException(e);
             }
 
+            if (response.getStatusLine().getStatusCode()>=400){
+                throw new IOException("Bad status code = "+response.getStatusLine().getStatusCode());
+            }
+
             HttpEntity entity = response.getEntity();
             if (entity == null) throw new RuntimeException("No body");
             byteLen = response.getEntity().getContentLength();
@@ -234,7 +238,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        public void initialize() throws ExecutionPendingException {
+        public void checkResources() throws ExecutionPendingException {
             dstFolder = getTask().getProperty("dst", FileModel.class);
             dstFile = dstFolder.createFile(getTask().getProperty("fileName", String.class));
             url = getTask().getProperty("url",String.class);
@@ -254,7 +258,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
-        public void initialize() throws ExecutionPendingException {
+        public void checkResources() throws ExecutionPendingException {
             srcFile = getTask().getProperty("src", FileModel.class);
             dstFolder = getTask().getProperty("dst", FileModel.class);
             dstFile = dstFolder.createFile(srcFile.getSimpleName());
@@ -515,7 +519,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         protected abstract boolean execute();
 
-        public abstract void initialize() throws ExecutionPendingException;
+        public abstract void checkResources() throws ExecutionPendingException;
     }
 
 }
