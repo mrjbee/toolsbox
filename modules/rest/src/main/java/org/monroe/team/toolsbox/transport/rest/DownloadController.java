@@ -17,13 +17,14 @@ public class DownloadController {
     public ExploreDownloadUrlDefinition exploreDownloadUrl;
 
     @RequestMapping(value = "downloads/details",method = RequestMethod.POST)
-    public @ResponseBody ExploreDownloadUrlDefinition.DownloadUrlDetailsResponse buildDetails(@RequestBody BuildRequestDTO requestDTO){
+    public @ResponseBody
+    ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse buildDetails(@RequestBody BuildRequestDTO requestDTO){
         try {
             return exploreDownloadUrl.perform(requestDTO.url);
         } catch (ExploreDownloadUrlDefinition.UnreachableUrlException e) {
             throw new TransportExceptions.InvalidIdException(requestDTO.url);
         }
-    };
+    }
 
     public static class BuildRequestDTO{
         public String url;
