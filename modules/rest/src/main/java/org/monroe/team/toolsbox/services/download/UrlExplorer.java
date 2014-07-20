@@ -27,8 +27,12 @@ public class UrlExplorer {
         CloseableHttpClient httpclient = HttpClientBuilder.create().setRedirectStrategy(new DefaultRedirectStrategy() {
             @Override
             protected URI createLocationURI(String location) throws ProtocolException {
-                location = UrlEscapers.urlFragmentEscaper().escape(location);
-                return super.createLocationURI(location);
+                try{
+                    return super.createLocationURI(location);
+                }catch (Exception e){
+                    location = UrlEscapers.urlFragmentEscaper().escape(location);
+                    return super.createLocationURI(location);
+                }
             }
         }).build();
         try{
@@ -63,6 +67,8 @@ public class UrlExplorer {
 
         HttpEntity entity = response.getEntity();
         if (entity == null) throw new ExploreDownloadUrlDefinition.UnreachableUrlException(new NullPointerException("No entity"));
+        if (response.getStatusLine().getStatusCode() >= 400)
+            throw new ExploreDownloadUrlDefinition.UnreachableUrlException(new NullPointerException("Bad Response:"+response.getStatusLine()));
         long byteLen = response.getEntity().getContentLength();
         if (byteLen<0)byteLen=0;
         //Content-Disposition: attachment; filename="Google I-O 2014 - Taming your cloud applications with intelligent monitoring.mp4"

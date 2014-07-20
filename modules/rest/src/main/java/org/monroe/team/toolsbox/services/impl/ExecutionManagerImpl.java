@@ -207,7 +207,6 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected void releaseResources() {
-            super.releaseResources();
             //Close HTTP Connection
             if (httpclient != null){
                 try {
@@ -219,6 +218,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                     throw new RuntimeException("Exception during closing HTTP client",e);
                 }
             }
+            super.releaseResources();
         }
 
         @Override
@@ -228,6 +228,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected void cleanupPreviousExecution() {
+            log.info("[Task ="+getTask().getRef()+"] Cleaning up resources....");
             if(dstFile.isExistsLocally()){
                 try {
                     dstFile.remove();
@@ -235,6 +236,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                     throw new RuntimeException(e);
                 }
             }
+            log.info("[Task ="+getTask().getRef()+"] Cleanup resources [Done]");
         }
 
         @Override
@@ -267,6 +269,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected void cleanupPreviousExecution() {
+            log.info("[Task ="+getTask().getRef()+"] Cleaning up previous execution....");
             if (dstFile.isExistsLocally() && !fileExistsBeforeCopy){
                 try {
                     dstFile.remove();
@@ -344,15 +347,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected void releaseResources()  {
+            log.info("[Task ="+getTask().getRef()+"] Releasing resources....");
             buffer = null;
             RuntimeException ex = null;
 
-            try {
-                if (os != null) os.close();
-            } catch (IOException e) {
-                log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                ex = new RuntimeException(e);
-            }
 
             try {
                 if(is != null) is.close();
@@ -361,7 +359,19 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 ex = new RuntimeException(e);
             }
 
+            try {
+                if (os != null) {
+                    os.flush();
+                    os.close();
+                }
+            } catch (IOException e) {
+                log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
+                ex = new RuntimeException(e);
+            }
+
+
             if(ex != null) throw ex;
+            log.info("[Task ="+getTask().getRef()+"] Releasing resources [Done]");
         }
 
         @Override
@@ -488,7 +498,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 try {
                     log.info("[Task = {}] Rollback and release resources", task.getRef());
                     task.updateStatus(killed ? TaskModel.ExecutionStatus.Killed : TaskModel.ExecutionStatus.Fails);
-                    if (rollbackAndReleaseResources()){
+                    if (!rollbackAndReleaseResources()){
                         releaseResources();
                     }
                 } catch (Exception rollbackException){
