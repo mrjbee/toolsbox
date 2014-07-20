@@ -15,14 +15,15 @@ public interface ExploreDownloadUrlDefinition {
 
     public class ExploreDownloadUrlResponse{
 
-        public final DownloadUrlChoice[] downloadUrlChoices;
+        public final List<DownloadUrlChoice> downloadUrlChoices = new ArrayList<DownloadUrlChoice>();
+        public final DownloadUrlDetails downloadUrlDetails;
 
-        public ExploreDownloadUrlResponse(DownloadUrlChoice[] downloadUrlChoices) {
-            this.downloadUrlChoices = downloadUrlChoices;
+        public ExploreDownloadUrlResponse() {
+            this.downloadUrlDetails = null;
         }
 
-        public ExploreDownloadUrlResponse(DownloadUrlDetails downloadUrlDetails){
-            this.downloadUrlChoices = new DownloadUrlChoice[]{new DownloadUrlChoice("none","none",downloadUrlDetails)};
+        public ExploreDownloadUrlResponse(DownloadUrlDetails downloadUrlDetails) {
+            this.downloadUrlDetails = downloadUrlDetails;
         }
     }
 
@@ -30,29 +31,12 @@ public interface ExploreDownloadUrlDefinition {
 
         public final String name;
         public final String description;
-        public final DownloadUrlDetails downloadLinkDetails;
-        public final List<DownloadUrlChoice> subChoices = new ArrayList<DownloadUrlChoice>();
+        public final String ref;
 
-        public DownloadUrlChoice(String name, String description, DownloadUrlDetails downloadLinkDetails) {
+        public DownloadUrlChoice(String name, String description, String ref) {
             this.name = name;
             this.description = description;
-            this.downloadLinkDetails = downloadLinkDetails;
-        }
-
-        public DownloadUrlChoice(DownloadUrlDetails fileDetails) {
-            this.name = null;
-            this.description = null;
-            this.downloadLinkDetails = fileDetails;
-        }
-
-        @Override
-        public String toString() {
-            return "DownloadUrlChoice{\n" +
-                    "\tname='" + name + '\'' + "\n"+
-                    "\t, description='" + description + '\'' + "\n"+
-                    "\t, downloadLinkDetails=" + downloadLinkDetails + "\n"+
-                    "\t, subChoices=" + subChoices + "\n"+
-                    '}';
+            this.ref = ref;
         }
     }
 

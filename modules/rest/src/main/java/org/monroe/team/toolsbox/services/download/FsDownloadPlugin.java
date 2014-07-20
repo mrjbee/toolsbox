@@ -15,6 +15,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.h2.mvstore.Page;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,7 +48,7 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
     private final static Pattern urlPattern = Pattern.compile("http:.*/brb.to/.*\\.html");
 
     @Resource(name = LoggerConfig.FEATURE_DOWNLOAD) Logger log;
-    @Inject UrlExplorer urlExplorer;
+    @Inject UrlLazyExploreManager lazyExploreManager;
 
     @Override
     public boolean isLinkAcceptable(String url) {
@@ -55,14 +56,12 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
     }
 
     @Override
-    public ExploreDownloadUrlDefinition.DownloadUrlChoice[] explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
-        PageExplorer pageExplorer = new PageExplorer(log, urlExplorer);
+    public ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
+        PageExplorer pageExplorer = new PageExplorer(log,lazyExploreManager);
         try{
             return pageExplorer.explore(url);
         } catch (ParsePageException e) {
             throw new ExploreDownloadUrlDefinition.UnreachableUrlException(e);
-        } finally {
-            pageExplorer.destroy();
         }
     }
 
@@ -70,7 +69,6 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         public ParsePageException(String message) {
             super(message);
         }
-
         public ParsePageException(String message, Throwable cause) {
             super(message, cause);
         }
@@ -87,11 +85,11 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         private final int instanceId;
         private final Logger log;
         private CloseableHttpClient httpclient;
-        private final UrlExplorer urlExplorer;
+        private final UrlLazyExploreManager lazyExploreManager;
 
-        public PageExplorer(Logger log, UrlExplorer urlExplorer) {
+        public PageExplorer(Logger log, UrlLazyExploreManager lazyExploreManager) {
             this.log = log;
-            this.urlExplorer = urlExplorer;
+            this.lazyExploreManager = lazyExploreManager;
             instanceId = ++instanceIdCounter;
         }
 
@@ -99,7 +97,7 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         //ajax&folder=f10
         //name="fl 108624"
 
-        public ExploreDownloadUrlDefinition.DownloadUrlChoice[] explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException, ParsePageException {
+        public ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException, ParsePageException {
             httpclient = HttpClientBuilder.create().setRedirectStrategy(new DefaultRedirectStrategy() {
                 @Override
                 protected URI createLocationURI(String location) throws ProtocolException {
@@ -109,47 +107,54 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
             }).build();
             String topFolderId = getTopFolderId(url);
             Document topFolderDocument = getPageDocument(url + "?ajax&folder=" + topFolderId);
-            ExploreDownloadUrlDefinition.DownloadUrlChoice[] answer = exploreFolder(url, topFolderDocument);
-            log.info("Found choices = {}", Arrays.toString(answer));
+
+            FSLazyExploreExecution execution = new FSLazyExploreExecution(this,url);
+            lazyExploreManager.registerExecution("fs",execution);
+
+            ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse answer = exploreFolder(url, topFolderDocument,execution);
+            log.info("Found choices = {}", answer);
             return answer;
         }
 
-        private ExploreDownloadUrlDefinition.DownloadUrlChoice[] exploreFolder(String url, Document topFolderDocument) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
+        private ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse exploreFolder(String url, String folderId, FSLazyExploreExecution exploreExecution) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
+            return exploreFolder(url, getPageDocument(url+"?ajax&folder="+folderId), exploreExecution);
+        }
+
+        private ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse exploreFolder(String url, Document topFolderDocument, FSLazyExploreExecution exploreExecution) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
             Elements elements = topFolderDocument.select("body>ul>li.folder");
-            List<ExploreDownloadUrlDefinition.DownloadUrlChoice> choiceList = new ArrayList<ExploreDownloadUrlDefinition.DownloadUrlChoice>();
+            ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse answer = new ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse();
             for(int i=0;i<elements.size();i++){
                 Element folder = elements.get(i);
                 Element subFolderElement = selectElemByCss(folder, ".title:not(.link-subtype)", false);
                 if (subFolderElement == null){
-                    String name = selectElemByCss(folder, ".title:not(.link-simple)", true).text();
-                    String details = getItemDetails(folder);
+                    String details = selectElemByCss(folder, ".title:not(.link-simple)", true).text() +" "+ getItemDetails(folder);
                     String fileList = getFolderFileListUrl(folder);
-                    ExploreDownloadUrlDefinition.DownloadUrlChoice choice =
-                            new ExploreDownloadUrlDefinition.DownloadUrlChoice(name, details, null);
                     String fileContents = getContent("http://brb.to"+fileList);
                     for(String fileUrl:fileContents.split("\n")){
+                        String origUrl = fileUrl.trim();
                         try {
                             fileUrl = URLDecoder.decode(fileUrl.trim(), "UTF-8");
                         } catch (UnsupportedEncodingException e) {}
-                        choice.subChoices.add(new ExploreDownloadUrlDefinition.DownloadUrlChoice(
-                                new ExploreDownloadUrlDefinition.DownloadUrlDetails(fileUrl,
-                                com.google.common.io.Files.getNameWithoutExtension(fileUrl),
-                                com.google.common.io.Files.getFileExtension(fileUrl),
-                                org.monroe.team.toolsbox.services.Files.convertToBestUnitsAsString(0))));
+
+                        ExploreDownloadUrlDefinition.DownloadUrlChoice choice =
+                                new ExploreDownloadUrlDefinition.DownloadUrlChoice(
+                                        com.google.common.io.Files.getNameWithoutExtension(fileUrl),
+                                        details,
+                                        origUrl);
+                        answer.downloadUrlChoices.add(choice);
                     }
-                    choiceList.add(choice);
                 } else {
                     String name = subFolderElement.children().text();
                     String details = getItemDetails(folder);
                     String subFolderId = subFolderElement.attr("name").substring(2);
-                    ExploreDownloadUrlDefinition.DownloadUrlChoice[] subChoices = exploreFolder(url, getPageDocument(url+"?ajax&folder="+subFolderId));
-                    ExploreDownloadUrlDefinition.DownloadUrlChoice choice = new ExploreDownloadUrlDefinition.DownloadUrlChoice(name,details,null);
-                    choice.subChoices.addAll(Lists.newArrayList(subChoices));
-                    choiceList.add(choice);
+                    String dataId = exploreExecution.putData(subFolderId);
+                    String dataUrl = exploreExecution.generateDataUrl(dataId);
+                    ExploreDownloadUrlDefinition.DownloadUrlChoice choice = new ExploreDownloadUrlDefinition.DownloadUrlChoice(name, details, dataUrl);
+                    answer.downloadUrlChoices.add(choice);
                 }
             }
 
-            return choiceList.toArray(new ExploreDownloadUrlDefinition.DownloadUrlChoice[]{});
+            return answer;
         }
 
         private String getItemDetails(Element folder) {
@@ -288,4 +293,27 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         }
     }
 
+    public static class FSLazyExploreExecution extends UrlLazyExploreManager.LazyExecution {
+
+        private final PageExplorer pageExplorer;
+        private final String originalUrl;
+
+        protected FSLazyExploreExecution(PageExplorer pageExplorer, String originalUrl) {
+            super(60*60*1000);
+            this.pageExplorer = pageExplorer;
+            this.originalUrl = originalUrl;
+        }
+
+        @Override
+        public ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse execute(String dataId) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
+            String folderId = (String) getData(dataId);
+            if (folderId == null) throw new ExploreDownloadUrlDefinition.UnreachableUrlException(new RuntimeException("Couldn`t find data = "+dataId));
+            return this.pageExplorer.exploreFolder(originalUrl,folderId,this);
+        }
+
+        @Override
+        public void destroy() {
+            pageExplorer.destroy();
+        }
+    }
 }

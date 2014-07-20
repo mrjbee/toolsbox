@@ -20,6 +20,7 @@ var ModelPrototype = {
     offlineTillDate : "NaN",
 
     constructor:function _constructor(){
+        this._serverUrl = "http://"+location.host+"/remfly-api/rest";
         $.ajaxSetup({
             contentType: "application/json; charset=UTF-8",
             beforeSend: function (request) {

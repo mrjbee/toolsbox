@@ -2,6 +2,7 @@ package org.monroe.team.toolsbox.transport.rest;
 
 import org.apache.logging.log4j.Logger;
 import org.monroe.team.toolsbox.services.ConfigurationManager;
+import org.monroe.team.toolsbox.services.download.UrlLazyExploreManager;
 import org.monroe.team.toolsbox.transport.timer.AbstractTimerController;
 import org.monroe.team.toolsbox.transport.timer.TimerSchedule;
 import org.monroe.team.toolsbox.us.ExecutePendingTasks;
@@ -23,6 +24,8 @@ public class TimerController extends AbstractTimerController{
     @Inject
     ExecutePendingTasks executePendingTasks;
 
+    @Inject
+    UrlLazyExploreManager urlLazyExploreManager;
 
     @Resource(name="task")
     Logger log;
@@ -36,6 +39,12 @@ public class TimerController extends AbstractTimerController{
             storageLookup.perform(request);
         }
     }
+
+    @TimerSchedule(60000)
+    public void clenupUrlExecution(){
+        urlLazyExploreManager.cleanUpInvalidExecutions();
+    }
+
 
     @TimerSchedule(1000)
     public void executePendingTasks(){

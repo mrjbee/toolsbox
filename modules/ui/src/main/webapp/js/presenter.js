@@ -9,6 +9,7 @@ var PresenterPrototype = {
     _taskWidgetFactory: null,
     _taskWidgets:{},
     _scheduledNameFunction:null,
+    _downloadDetailsStack:[],
 
     constructor:function _constructor(model,view){
         var me = this;
@@ -372,23 +373,17 @@ var PresenterPrototype = {
         this._view.downloadFileRefreshBtn.on('click', function () {
             //Prevent clicking while editing url
             if (me._view.downloadFileUrlEdit.is(":focus")) return;
+            this._downloadDetailsStack = [];
             var url=me._view.downloadFileUrlEdit.val().trim();
             if(url != ""){
                 this._lockUI();
                 for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
                     this._view.downloadUrlDetailsFields.fadeOut();
                 }
+                this._view.downloadFileBrowserPanel.fadeOut();
                 this._model.fetchUrlDetails(url, function(success, urlDetails, statusCode){
-                    if (success){
-                        this._view.downloadFileUrlLink.text(urlDetails.url);
-                        this._view.downloadFileUrlLink.attr("href",urlDetails.url);
-                        this._view.downloadFileNameEdit.val(urlDetails.fileName);
-                        this._view.downloadFileExtEdit.val(urlDetails.ext);
-                        this._view.downloadFileSizeLabel.text(urlDetails.size);
-                        for(var i=0; i < this._view.downloadUrlDetailsFields.length;i++){
-                            this._view.downloadUrlDetailsFields.fadeIn();
-                        }
-                        this._view.downloadFileBrowserPanel.fadeIn();
+                    if (success) {
+                        this._updateDownloadDetailsView(urlDetails);
                     }else{
                         alert("Ooops! Something bad. ("+statusCode+")");
                     }
@@ -396,6 +391,7 @@ var PresenterPrototype = {
                 }.bind(this));
             }
         }.bind(me));
+
 
         this._view.downloadFileBtn.on('click', function () {
 
@@ -430,6 +426,12 @@ var PresenterPrototype = {
                 alert("Ooops. Something bad...")
                 this._unlockUI();
             }.bind(this));
+        }.bind(me));
+
+        this._view.downloadChoiceBackBtn.on('click', function () {
+            var urlDetails = this._downloadDetailsStack.pop();
+            urlDetails = this._downloadDetailsStack.pop();
+            this._updateDownloadDetailsView(urlDetails);
         }.bind(me));
 
     },
@@ -545,7 +547,76 @@ var PresenterPrototype = {
 
     _closeActionPopup : function(){
         this._view.taskChoosePopup.popup("close");
-    }
+    },
 
+    _updateDownloadDetailsView:function(urlDetails){
+        this._downloadDetailsStack.push(urlDetails);
+        if (urlDetails.downloadUrlDetails) {
+            urlDetails = urlDetails.downloadUrlDetails;
+            this._view.downloadFileUrlLink.text("Download Link");
+            this._view.downloadFileUrlLink.attr("href", urlDetails.url);
+            this._view.downloadFileNameEdit.val(urlDetails.fileName);
+            this._view.downloadFileExtEdit.val(urlDetails.ext);
+            this._view.downloadFileSizeLabel.text(urlDetails.size);
+            this._showUpDownloadDetails();
+        } else {
+            this._view.downloadChoiceBrowserList.empty();
+            var liEl,aEl,pEl,p2El;
+            var itChoice;
+            for (var i=0;i<urlDetails.downloadUrlChoices.length;i++){
+                itChoice = urlDetails.downloadUrlChoices[i];
+                liEl = $(document.createElement("li"));
+                aEl = $(document.createElement("a"));
+                pEl = $(document.createElement("p"));
+                p2El = $(document.createElement("p"));
+                liEl.append(aEl);
+                if (!itChoice.ref.contains("plugin:")){
+                    liEl.attr("data-icon","cloud");
+                }
+                aEl.append(itChoice.name);
+                p2El.append(itChoice.name);
+                pEl.append(itChoice.description);
+                aEl.append(p2El);
+                aEl.append(pEl);
+                aEl.click({
+                    ref:itChoice.ref
+                },function(event){
+                    this._lockUI();
+                    this._model.fetchUrlDetails(event.data.ref, function(success, urlDetails, statusCode){
+                        if (success) {
+                            this._updateDownloadDetailsView(urlDetails);
+                        }else{
+                            alert("Ooops! Something bad. ("+statusCode+")");
+                        }
+                        this._unlockUI();
+                    }.bind(this));
+                }.bind(this));
+                this._view.downloadChoiceBrowserList.append(liEl)
+            }
+            this._view.downloadChoiceBrowserList.listview( "refresh" );
+            this._showUpDownloadChoicesDetails();
+        }
+    },
+
+    _showUpDownloadChoicesDetails:function(){
+        for (var i = 0; i < this._view.downloadUrlDetailsFields.length; i++) {
+            this._view.downloadUrlDetailsFields.fadeOut();
+        }
+        this._view.downloadFileBrowserPanel.fadeOut();
+        if (this._downloadDetailsStack.length > 1){
+            this._view.downloadChoiceBackBtn.fadeIn();
+        }else{
+            this._view.downloadChoiceBackBtn.fadeOut();
+        }
+        this._view.downloadChoiceDialog.popup("open");
+    },
+
+    _showUpDownloadDetails:function(){
+        for (var i = 0; i < this._view.downloadUrlDetailsFields.length; i++) {
+            this._view.downloadUrlDetailsFields.fadeIn();
+        }
+        this._view.downloadFileBrowserPanel.fadeIn();
+        this._view.downloadChoiceDialog.popup("close");
+    }
 
 }

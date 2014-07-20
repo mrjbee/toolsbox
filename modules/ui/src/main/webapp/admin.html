@@ -74,6 +74,27 @@
         </div>
     </div>
 
+    <div data-history="false" data-role="popup" id="downloadChoiceDialog" data-theme="b" data-dismissible="false" style="width:98%;">
+        <div data-role="header" data-theme="b">
+            <h1>Select file for download</h1>
+        </div>
+        <div role="main" class="ui-content">
+            <!--
+            <p>You are going to copy file <b id="srcFileName">bla/bla/lalal.com</b></p>
+            <p>Please select destination folder</p>
+            downloadChoiceDialog
+            download-choice-browser-list
+            download-choice-back
+            -->
+            <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-corner-all" id="download-choice-back">.. Back</a>
+            <ul data-role="listview" data-inset="true" id="download-choice-browser-list">
+            </ul>
+            <!--
+            <div id="copy-dialog-info-label" class="warning" style="display: none"></div>
+            -->
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+        </div>
+    </div>
 
     <div data-role="popup" id="file-task-popup" data-theme="b" data-history="false">
         <ul data-role="listview" data-inset="true" style="min-width:210px;">
@@ -106,10 +127,10 @@
                         </ul>
                     </div>
                     <div id="one">
-                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:90%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
+                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:80%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
                             <div data-role="controlgroup" data-theme="b" data-type="horizontal">
-                                <a href="#" style="display: none" class="ui-btn ui-mini ui-icon-plus ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="add-folder-top-btn">New Folder ...</a>
-                                <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="file-browser-top-btn">Back to storage list</a>
+                                <a href="#" style="display: none" class="ui-btn ui-mini ui-icon-plus ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="add-folder-top-btn">Folder</a>
+                                <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="file-browser-top-btn">Storage List</a>
                             </div>
                         </fieldset>
                              <div class="ui-body ui-body-a ui-corner-all">
@@ -128,12 +149,6 @@
                                     </a>
                                 </li>
                                 <li class="ui-field-contain" style="display: none">
-                                    <div class="ui-body">
-                                        <a class="ui-link content-wrap"
-                                           href="#" id="download-file-url-link"></a>
-                                    </div>
-                                </li>
-                                <li class="ui-field-contain" style="display: none">
                                     <label>File name</label>
                                     <input id="download-file-name-edit" value="" data-clear-btn="true" type="text">
                                 </li>
@@ -144,6 +159,12 @@
                                 <li class="ui-field-contain" style="display: none">
                                     <label>File size</label>
                                     <label id="download-file-size-label">2.0 KB</label>
+                                </li>
+                                <li class="ui-field-contain" style="display: none">
+                                    <div class="ui-body">
+                                        <a class="ui-link content-wrap"
+                                           href="#" id="download-file-url-link"></a>
+                                    </div>
                                 </li>
                             </ul>
 
@@ -159,13 +180,14 @@
                         </div>
                     </div>
                     <div id="three">
-                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:90%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
+                        <!--
+                        <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:80%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
                             <div data-role="controlgroup" data-theme="b" data-type="horizontal">
                                 <a href="#" class="ui-btn ui-btn-b ui-mini ui-icon-arrow-u-r ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline">Clear Task History</a>
                             </div>
                         </fieldset>
-
-                        <div class="ui-body ui-body-a ui-corner-all">
+                        -->
+                        <div style="margin-top: 10px" class="ui-body ui-body-a ui-corner-all">
                             <div id="task-browser-list">
                             </div>
                         </div>
