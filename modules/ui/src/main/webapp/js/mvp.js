@@ -48,7 +48,11 @@ function initMVP(){
         downloadFileBtn:$("#download-file-btn"),
         downloadChoiceDialog:$("#downloadChoiceDialog"),
         downloadChoiceBrowserList:$("#download-choice-browser-list"),
-        downloadChoiceBackBtn:$("#download-choice-back")
+        downloadChoiceBackBtn:$("#download-choice-back"),
+        downloadMetaDataPanel:$("#download-metadata-panel"),
+        downloadMetaDataImg:$("#cover-download-metadata-img"),
+        downloadMetaDataCaptionLabel:$("#caption-download-metadata-label"),
+        downloadMetaDataDescriptionLabel:$("#description-download-metadata-label")
     });
 
     //TODO: disbale form submission. Place it in presenter

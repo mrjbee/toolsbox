@@ -383,6 +383,14 @@ var PresenterPrototype = {
                 this._view.downloadFileBrowserPanel.fadeOut();
                 this._model.fetchUrlDetails(url, function(success, urlDetails, statusCode){
                     if (success) {
+                        if (urlDetails.metadata){
+                            this._view.downloadMetaDataCaptionLabel.text(urlDetails.metadata.title);
+                            this._view.downloadMetaDataDescriptionLabel.text(urlDetails.metadata.description);
+                            this._view.downloadMetaDataImg.attr("src",urlDetails.metadata.imageUrl);
+                            this._view.downloadMetaDataPanel.fadeIn();
+                        }else{
+                            this._view.downloadMetaDataPanel.fadeOut();
+                        }
                         this._updateDownloadDetailsView(urlDetails);
                     }else{
                         alert("Ooops! Something bad. ("+statusCode+")");
@@ -573,7 +581,6 @@ var PresenterPrototype = {
                 if (!itChoice.ref.contains("plugin:")){
                     liEl.attr("data-icon","cloud");
                 }
-                aEl.append(itChoice.name);
                 p2El.append(itChoice.name);
                 pEl.append(itChoice.description);
                 aEl.append(p2El);

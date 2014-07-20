@@ -79,6 +79,12 @@
             <h1>Select file for download</h1>
         </div>
         <div role="main" class="ui-content">
+            <div id="download-metadata-panel" style="display: none">
+                <img id="cover-download-metadata-img" alt="Cover" style="float:left; margin: 20px 20px 20px 20px; box-shadow: 0px 0px 3px #fff;">
+                <h3 id="caption-download-metadata-label" style="margin: 25px 25px 25px 25px;"></h3>
+                <p id="description-download-metadata-label"></p>
+            </div>
+            <br style="clear: left"/>
             <!--
             <p>You are going to copy file <b id="srcFileName">bla/bla/lalal.com</b></p>
             <p>Please select destination folder</p>
@@ -105,7 +111,7 @@
         </ul>
     </div>
 
-    <div data-role="header" class="ui-header ui-btn-icon-left">
+    <div data-role="header" class="ui-header">
         <h3>RemFLy. Remote Manager</h3>
     </div>
     <div role="main" class="ui-content">

@@ -105,15 +105,29 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
                     return super.createLocationURI(location);
                 }
             }).build();
-            String topFolderId = getTopFolderId(url);
-            Document topFolderDocument = getPageDocument(url + "?ajax&folder=" + topFolderId);
 
+            Document document = getPageDocument(url);
+            ExploreDownloadUrlDefinition.DownloadUrlMetadata metadata = buildMetaData(document);
+            String topFolderId = getTopFolderId(document);
+            Document topFolderDocument = getPageDocument(url + "?ajax&folder=" + topFolderId);
             FSLazyExploreExecution execution = new FSLazyExploreExecution(this,url);
             lazyExploreManager.registerExecution("fs",execution);
-
-            ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse answer = exploreFolder(url, topFolderDocument,execution);
+            ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse answer = exploreFolder(url, topFolderDocument, execution);
+            answer.metadata = metadata;
             log.info("Found choices = {}", answer);
             return answer;
+        }
+
+        private ExploreDownloadUrlDefinition.DownloadUrlMetadata buildMetaData(Document document) {
+            String caption = document.select(".b-tab-item__title-inner>span").text();
+            String img = document.select(".poster-main img").attr("src");
+            String description = document.select("p.item-decription").text();
+
+            return new ExploreDownloadUrlDefinition.DownloadUrlMetadata(
+                    caption,
+                    img,
+                    description
+            );
         }
 
         private ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse exploreFolder(String url, String folderId, FSLazyExploreExecution exploreExecution) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
@@ -196,8 +210,7 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
             }
         }
 
-        private String getTopFolderId(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
-            Document document = getPageDocument(url);
+        private String getTopFolderId(Document document) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
             Elements elements = document.getElementsByClass("b-files-folders-link");
             if (elements.size() != 1){
                 throw new ParsePageException("More than one (or none) root folder found = "+elements.size());

@@ -17,13 +17,35 @@ public interface ExploreDownloadUrlDefinition {
 
         public final List<DownloadUrlChoice> downloadUrlChoices = new ArrayList<DownloadUrlChoice>();
         public final DownloadUrlDetails downloadUrlDetails;
+        public DownloadUrlMetadata metadata;
 
         public ExploreDownloadUrlResponse() {
             this.downloadUrlDetails = null;
+            this.metadata = null;
         }
 
         public ExploreDownloadUrlResponse(DownloadUrlDetails downloadUrlDetails) {
             this.downloadUrlDetails = downloadUrlDetails;
+            this.metadata = null;
+        }
+
+        public ExploreDownloadUrlResponse(DownloadUrlMetadata metadata) {
+            this.downloadUrlDetails = null;
+            this.metadata = metadata;
+        }
+    }
+
+    public static class DownloadUrlMetadata {
+
+        public final String title;
+        public final String description;
+        public final String imageUrl;
+
+
+        public DownloadUrlMetadata(String title, String imageUrl, String description) {
+            this.title = title;
+            this.imageUrl = imageUrl;
+            this.description = description;
         }
     }
 

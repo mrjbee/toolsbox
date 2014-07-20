@@ -404,7 +404,11 @@ public class ExecutionManagerImpl implements ExecutionManager{
                     estimationTimeBuffer = 0;
                 }
                 long endTime = Math.round((totalByteCount - readedByteCount)/speedCalc.get());
-                publishCopyStatistic(speedCalc.get(), endTime);
+                if (speedCalc.get() < 1){
+                    publishCopyStatistic(0, 0);
+                } else {
+                    publishCopyStatistic(speedCalc.get(), endTime);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
