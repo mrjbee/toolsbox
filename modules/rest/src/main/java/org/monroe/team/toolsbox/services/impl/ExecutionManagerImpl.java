@@ -254,6 +254,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
         private FileModel dstFile;
         //TODO: after system restart copy wouldn`t happend
         private boolean fileExistsBeforeCopy;
+        private boolean removeAfterCopyRequested;
 
         protected CopyExecution(Function<Void, Void> postExecutionAction, TaskModel task, boolean isCleanRun, Logger log) {
             super(postExecutionAction, task, isCleanRun, log);
@@ -264,6 +265,7 @@ public class ExecutionManagerImpl implements ExecutionManager{
             srcFile = getTask().getProperty("src", FileModel.class);
             dstFolder = getTask().getProperty("dst", FileModel.class);
             dstFile = dstFolder.createFile(srcFile.getSimpleName());
+            removeAfterCopyRequested = getTask().getProperty("remove",boolean.class);
         }
 
 
@@ -296,6 +298,23 @@ public class ExecutionManagerImpl implements ExecutionManager{
         }
 
         @Override
+        protected void doOnFinish() {
+            if (removeAfterCopyRequested){
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    log.warn("[Task ="+getTask().getRef()+"] Couldn`t close is stream ",e);
+                }
+                is = null;
+                try {
+                    srcFile.remove();
+                } catch (IOException e) {
+                    log.warn("[Task ="+getTask().getRef()+"] Could`t remove src file ",e);
+                }
+            }
+        }
+
+        @Override
         protected InputStream getReadStream() throws IOException {
             return srcFile.openReadStream();
         }
@@ -311,8 +330,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         private final static int DEFAULT_CHUNK_SIZE = (int) Files.convertFromUnits(32, Files.Units.Kilobyte);
 
-        private InputStream is;
-        private OutputStream os;
+        protected InputStream is;
+        protected OutputStream os;
         private long totalByteCount = 0;
         private long startTime = 0;
         private long readedByteCount = 0;
@@ -344,19 +363,15 @@ public class ExecutionManagerImpl implements ExecutionManager{
             totalByteCount = getCopyByteCount();
         }
 
-
         @Override
         protected void releaseResources()  {
             log.info("[Task ="+getTask().getRef()+"] Releasing resources....");
             buffer = null;
-            RuntimeException ex = null;
-
 
             try {
                 if(is != null) is.close();
             } catch (IOException e) {
                 log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                ex = new RuntimeException(e);
             }
 
             try {
@@ -366,11 +381,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
                 }
             } catch (IOException e) {
                 log.warn("[Task ="+getTask().getRef()+"] Error during releasing resources",e);
-                ex = new RuntimeException(e);
             }
 
-
-            if(ex != null) throw ex;
             log.info("[Task ="+getTask().getRef()+"] Releasing resources [Done]");
         }
 
@@ -388,8 +400,10 @@ public class ExecutionManagerImpl implements ExecutionManager{
             int readCount = -1;
             try {
                 readCount = is.read(buffer, 0, buffer.length);
-                if (readCount <= 0)
+                if (readCount <= 0) {
+                    doOnFinish();
                     return true;
+                }
                 os.write(buffer,0,readCount);
                 readedByteCount += readCount;
                 estimationTimeBuffer += readCount;
@@ -415,6 +429,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
             step++;
             return false;
         }
+
+        protected void doOnFinish(){};
 
         @Override
         final protected Float calculateCurrentProgress() {

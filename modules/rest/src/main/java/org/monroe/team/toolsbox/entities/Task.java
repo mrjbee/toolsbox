@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import org.monroe.team.toolsbox.us.model.TaskModel;
 
 import javax.persistence.*;
+import javax.persistence.metamodel.Type;
 import java.util.List;
 import java.util.Properties;
 
@@ -44,6 +45,8 @@ public class Task {
             return (T) property.value;
         } if (Integer.class.equals(type)) {
             return (T) new Integer(Integer.parseInt(property.value));
+        }if (Boolean.class.equals(type) || boolean.class.equals(type)) {
+            return (T) new Boolean(Boolean.parseBoolean(property.value));
         }else{
             throw new RuntimeException("Unsupported type");
         }
