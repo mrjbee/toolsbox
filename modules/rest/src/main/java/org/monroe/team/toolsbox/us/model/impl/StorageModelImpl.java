@@ -119,7 +119,7 @@ public class StorageModelImpl implements StorageModel {
 
     @Override
     public long getFreeSpace() {
-        return (isMount())?asFileModel().asFile().getFreeSpace():0;
+        return (isMount())?asFileModel().asFile().getUsableSpace():0;
     }
 
     @Override
