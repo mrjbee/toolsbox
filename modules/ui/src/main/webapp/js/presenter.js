@@ -578,7 +578,7 @@ var PresenterPrototype = {
                 pEl = $(document.createElement("p"));
                 p2El = $(document.createElement("p"));
                 liEl.append(aEl);
-                if (!itChoice.ref.contains("plugin:")){
+                if (itChoice.ref.indexOf("plugin:")==-1){
                     liEl.attr("data-icon","cloud");
                 }
                 p2El.append(itChoice.name);
