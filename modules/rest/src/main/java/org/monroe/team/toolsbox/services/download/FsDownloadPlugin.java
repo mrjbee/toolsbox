@@ -98,13 +98,7 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         //name="fl 108624"
 
         public ExploreDownloadUrlDefinition.ExploreDownloadUrlResponse explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException, ParsePageException {
-            httpclient = HttpClientBuilder.create().setRedirectStrategy(new DefaultRedirectStrategy() {
-                @Override
-                protected URI createLocationURI(String location) throws ProtocolException {
-                    location = UrlEscapers.urlFragmentEscaper().escape(location);
-                    return super.createLocationURI(location);
-                }
-            }).build();
+            httpclient = HttpClientFactory.createClient();
 
             Document document = getPageDocument(url);
             ExploreDownloadUrlDefinition.DownloadUrlMetadata metadata = buildMetaData(document);
@@ -279,7 +273,7 @@ public class FsDownloadPlugin implements ExploreDownloadUrl.URlExplorerPlugin{
         }
 
         private HttpEntity getEntity(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
-            HttpGet httpget = new HttpGet(url);
+            HttpGet httpget = HttpClientFactory.prepareGet(url);
             httpget.setHeader("Content-Type", "charset=UTF-8");
             HttpResponse response = null;
             try {

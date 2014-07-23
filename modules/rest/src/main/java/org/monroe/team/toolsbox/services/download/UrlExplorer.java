@@ -24,17 +24,7 @@ public class UrlExplorer {
 
     public ExploreDownloadUrlDefinition.DownloadUrlDetails explore(String url) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
         ExploreDownloadUrlDefinition.DownloadUrlDetails urlDownloadDetails;
-        CloseableHttpClient httpclient = HttpClientBuilder.create().setRedirectStrategy(new DefaultRedirectStrategy() {
-            @Override
-            protected URI createLocationURI(String location) throws ProtocolException {
-                try{
-                    return super.createLocationURI(location);
-                }catch (Exception e){
-                    location = UrlEscapers.urlFragmentEscaper().escape(location);
-                    return super.createLocationURI(location);
-                }
-            }
-        }).build();
+        CloseableHttpClient httpclient = HttpClientFactory.createClient();
         try{
             urlDownloadDetails = explore(url, httpclient);
         }finally {
@@ -49,14 +39,7 @@ public class UrlExplorer {
 
     public ExploreDownloadUrlDefinition.DownloadUrlDetails explore(String url, CloseableHttpClient httpclient) throws ExploreDownloadUrlDefinition.UnreachableUrlException {
         ExploreDownloadUrlDefinition.DownloadUrlDetails urlDownloadDetails;
-        HttpGet httpget = null;
-        try {
-            httpget = new HttpGet(url);
-        }catch (Exception e){
-            url = UrlEscapers.urlFragmentEscaper().escape(url);
-            httpget = new HttpGet(url);
-        }
-
+        HttpGet httpget = HttpClientFactory.prepareGet(url);
         httpget.setHeader("Content-Type", "charset=UTF-8");
         HttpResponse response = null;
         try {

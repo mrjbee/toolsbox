@@ -212,12 +212,16 @@ public class TaskModelImpl implements TaskModel {
 
         switch (getType()){
             case COPY:
-                    long msCount = 0;
-                    double speed = getProperty("dst",FileModel.class).getStorage().getSpeed();
-                    long size = getProperty("src",FileModel.class).getByteSize();
-                    if (speed == 0) return "NaN";
-                    msCount = Math.round(size/speed);
-                    return msToHuman(msCount);
+                    try {
+                        long msCount = 0;
+                        double speed = getProperty("dst", FileModel.class).getStorage().getSpeed();
+                        long size = getProperty("src", FileModel.class).getByteSize();
+                        if (speed == 0) return "NaN";
+                        msCount = Math.round(size / speed);
+                        return msToHuman(msCount);
+                    }catch (Exception e){
+                        return "NaN";
+                    }
             case DOWNLOAD:
                     return "NaN";
             default:

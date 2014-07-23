@@ -156,6 +156,11 @@ public class FileModelImpl implements FileModel{
         return newFile;
     }
 
+    @Override
+    public boolean storageExists() {
+        return storageModelDependency.get() != null;
+    }
+
     private File createLocalFileWithName(String simpleName) {
         return new File(asFile(), simpleName);
     }
@@ -175,7 +180,7 @@ public class FileModelImpl implements FileModel{
         }
     }
 
-    private boolean isStorageMounted() {
+    public boolean isStorageMounted() {
         return isHealthy() &&
                 storageModelDependency.get().isMount();
     }

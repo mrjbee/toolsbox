@@ -37,4 +37,8 @@ public interface FileModel {
     void delete();
 
     FileModel renameTo(String fileName);
+
+    boolean storageExists();
+
+    public boolean isStorageMounted();
 }

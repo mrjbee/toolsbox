@@ -3,13 +3,16 @@ package org.monroe.team.toolsbox.services.impl;
 import com.google.common.base.Function;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Logger;
 import org.monroe.team.toolsbox.entities.Execution;
 import org.monroe.team.toolsbox.services.ExecutionManager;
 import org.monroe.team.toolsbox.services.Files;
+import org.monroe.team.toolsbox.services.download.HttpClientFactory;
 import org.monroe.team.toolsbox.transport.AverageCalculator;
 import org.monroe.team.toolsbox.us.model.FileModel;
 import org.monroe.team.toolsbox.us.model.StorageModel;
@@ -22,6 +25,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -181,9 +185,8 @@ public class ExecutionManagerImpl implements ExecutionManager{
 
         @Override
         protected InputStream getReadStream() throws IOException {
-            httpclient = HttpClientBuilder.create()
-                    .setUserAgent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0").build();
-            HttpGet httpget = new HttpGet(url);
+            httpclient = HttpClientFactory.createClient();
+            HttpGet httpget = HttpClientFactory.prepareGet(url);
             httpget.setHeader("Content-Type", "charset=UTF-8");
             HttpResponse response = null;
             try {

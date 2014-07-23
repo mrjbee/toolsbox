@@ -49,7 +49,8 @@ public class GetTasks implements GetTasksDefinition{
                         Integer dstFileId = task.getProperty("dst", Integer.class);
                         FileModel srcFile = fileManager.getById(srcFileId);
                         FileModel dstFile = fileManager.getById(dstFileId);
-                        if (srcFile !=null && dstFile != null) {
+                        if (srcFile !=null && srcFile.isStorageMounted()
+                                && dstFile != null && dstFile.isStorageMounted()) {
                             taskResponse.with("src", srcFile.getSimpleName())
                                     .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
                         } else {
@@ -63,7 +64,7 @@ public class GetTasks implements GetTasksDefinition{
                                 .with("url", task.getProperty("url",String.class));
                         dstFileId = task.getProperty("dst", Integer.class);
                         dstFile = fileManager.getById(dstFileId);
-                        if (dstFile != null) {
+                        if (dstFile != null && dstFile.isStorageMounted()) {
                             taskResponse
                                     .with("dst", dstFile.getStorage().getLabel()+"/../"+dstFile.getSimpleName());
                         } else {
