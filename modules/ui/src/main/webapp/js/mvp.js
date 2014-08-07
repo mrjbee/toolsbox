@@ -12,6 +12,7 @@ function initMVP(){
         lockPanel: $("#lockPanel"),
         fileBrowserList:$("#file-browser-list"),
         addFolderTopBtn:$("#add-folder-top-btn"),
+        multiSelectTopBtn:$("#multi-select-top-btn"),
         fileBrowserTopBtn:$("#file-browser-top-btn"),
         taskChoosePopup:$("#file-task-popup"),
         copyTaskItem:$("#copy-task-item"),
@@ -23,6 +24,7 @@ function initMVP(){
         nameFormOkBtn:$("#name-form-ok-btn"),
         deleteDialog:$("#deletePopup"),
         deleteFileNameLabel:$("#deleteFileName"),
+        deleteFileList:$("#deleteFileList"),
         deleteFileOkBtn:$("#delete-form-ok-btn"),
         copyDialogSrcFileName:$("#srcFileName"),
         copyDialogBrowser:$("#copy-browser-list"),
@@ -52,7 +54,12 @@ function initMVP(){
         downloadMetaDataPanel:$("#download-metadata-panel"),
         downloadMetaDataImg:$("#cover-download-metadata-img"),
         downloadMetaDataCaptionLabel:$("#caption-download-metadata-label"),
-        downloadMetaDataDescriptionLabel:$("#description-download-metadata-label")
+        downloadMetaDataDescriptionLabel:$("#description-download-metadata-label"),
+        multiSelectDialog:$("#multiFilesSelectDialog"),
+        multiSelectFieldSet:$("#multiSelectFieldSet"),
+        multiSelectInfoLabel:$("#multi-select-info-label"),
+        multiSelectDeleteBtn:$("#multi-select-delete"),
+        multiSelectCopyBtn:$("#multi-select-copy")
     });
 
     //TODO: disbale form submission. Place it in presenter

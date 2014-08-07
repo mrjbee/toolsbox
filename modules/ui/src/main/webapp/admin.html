@@ -19,7 +19,6 @@
 <body>
 <div class="top-cover">
 <div class="top-page" data-role="page">
-
     <div data-role="popup" id="loginDialog" data-theme="b" data-overlay-theme="b" class="ui-corner-all" data-dismissible="false" data-history="false">
             <form id="login-form" data-ajax="false"  style="padding:10px 20px;">
                     <h3>Please sign in</h3>
@@ -49,20 +48,44 @@
                 <h1 class="ui-btn-icon-left ui-icon-minus">Delete File</h1>
             </div>
             <div role="main" class="ui-content">
-                <p>You are sure want delete: <strong id="deleteFileName">bla/bla/lalal.com</strong>?</p>
+                <p>You are sure want delete file(s):</p>
+                <ul id="deleteFileList">
+                    <li><strong id="deleteFileName">bla/bla/lalal.com</strong></li>
+                </ul>
                 <input data-inline="true" id="delete-form-ok-btn" data-theme="b" data-icon="check" data-iconshadow="true" value="Yes" type="button">
                 <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-icon-forbidden ui-btn-icon-left ui-btn-b" data-rel="back">No</a>
             </div>
         </form>
     </div>
 
+    <div data-history="false" data-role="popup" id="multiFilesSelectDialog" data-theme="b" data-dismissible="false" style="max-width:98%;">
+        <div data-role="header" data-theme="b">
+            <h1>Multiple Files Selection</h1>
+        </div>
+        <div role="main" class="ui-content">
+            <p>Select files which you want to interact with.</p>
+            <fieldset id="multiSelectFieldSet" data-role="controlgroup">
+            </fieldset>
+            <br/>
+            <div id="multi-select-info-label" class="warning" style="display: none"></div>
+            <input data-inline="true" id="multi-select-delete" data-theme="b" data-icon="minus" data-iconshadow="true" value="Delete" type="button">
+            <input data-inline="true" id="multi-select-copy" data-theme="b" data-icon="plus" data-iconshadow="true" value="Copy" type="button">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+        </div>
+    </div>
+
+
     <div data-history="false" data-role="popup" id="copyDialog" data-theme="b" data-dismissible="false" style="max-width:98%;">
         <div data-role="header" data-theme="b">
             <h1>Copy File</h1>
         </div>
         <div role="main" class="ui-content">
-            <p>You are going to copy file <b id="srcFileName">bla/bla/lalal.com</b></p>
+            <p>You are going to copy file(s):</p>
+            <ul>
+                <li><b id="srcFileName">bla/bla/lalal.com</b></li>
+            </ul>
             <p>Please select destination folder</p>
+
             <ul data-role="listview" data-inset="true" id="copy-browser-list">
             </ul>
             <a href="#" class="ui-btn ui-mini  ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon" id="copy-dialog-storage-btn">Storage List</a>
@@ -136,6 +159,7 @@
                         <fieldset class="ui-body ui-body-b ui-btn-corner-all" style="border: 1px solid #777777;  box-shadow: 0px 0px 5px #000000; z-index: 1; width:80%; padding: 5px 10px 0px 10px; margin: -5px 20px 20px 20px">
                             <div data-role="controlgroup" data-theme="b" data-type="horizontal">
                                 <a href="#" style="display: none" class="ui-btn ui-mini ui-icon-plus ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="add-folder-top-btn">Folder</a>
+                                <a href="#" style="display: none" class="ui-btn ui-mini ui-icon-grid ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="multi-select-top-btn">Files</a>
                                 <a href="#" class="ui-btn ui-mini ui-icon-back ui-btn-icon-left ui-nodisc-icon ui-alt-icon ui-btn-inline" id="file-browser-top-btn">Storage List</a>
                             </div>
                         </fieldset>

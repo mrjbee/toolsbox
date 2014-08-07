@@ -12,13 +12,7 @@ var ModelPrototype = {
     _password : "",
 
     _taskUpdateTid:null,
-    //Server statistic fields
-    //@Deprecated
-    awakeMinutes : 0,
-    lastStatus : "NaN",
-    lastDate : "NaN",
-    offlineTillDate : "NaN",
-
+    
     constructor:function _constructor(){
         this._serverUrl = "http://"+location.host+"/remfly-api/rest";
         $.ajaxSetup({

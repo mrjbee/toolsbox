@@ -10,6 +10,22 @@ var PresenterPrototype = {
     _taskWidgets:{},
     _scheduledNameFunction:null,
     _downloadDetailsStack:[],
+    _selectedFiles:[],
+
+    _showDeletePopup: function () {
+        this._lockUI(false);
+        setTimeout(function () {
+            this._unlockUI();
+            this._view.deleteFileList.empty();
+            var liEl;
+            for (var i = 0; i < this._selectedFiles.length; i++) {
+                liEl = $(document.createElement("li"));
+                liEl.append(this._selectedFiles[i].name);
+                this._view.deleteFileList.append(liEl);
+            }
+            this._view.deleteDialog.popup("open");
+        }.bind(this), 1000);
+    },
 
     constructor:function _constructor(model,view){
         var me = this;
@@ -140,14 +156,61 @@ var PresenterPrototype = {
             this._view.nameDialog.popup("open");
         }.bind(this));
 
+        this._view.multiSelectTopBtn.click(function(){
+            var files = this._rootBrowserView.fileList;
+            var itCheckBox,itLabel;
+            var itId,itName;
+            var itemPairs = [];
+            this._view.multiSelectFieldSet.empty();
+            for (var i=0; i< files.length; i++){
+                if (!files[i].folder){
+                    itId = files[i].id+"_checkbox";
+                    itName = files[i].name;
+                    itCheckBox = $(document.createElement("input"))
+                        .attr("name",itId)
+                        .attr("id",itId)
+                        .attr("type","checkbox");
+                    itCheckBox.file=files[i];
+                    itLabel = $(document.createElement("label"))
+                        .attr("for",itId);
+                    itLabel.append(itName);
+                    this._view.multiSelectFieldSet.append(itCheckBox);
+                    this._view.multiSelectFieldSet.append(itLabel);
+                    itCheckBox.checkboxradio();
+                    itemPairs.push({
+                        checkbox:itCheckBox,
+                        file:files[i]
+                    });
+                }
+            }
+            this._view.multiSelectFieldSet.contentItems = itemPairs;
+            this._view.multiSelectFieldSet.controlgroup( "refresh" );
+            this._view.multiSelectDialog.popup("open");
+        }.bind(this));
+
+        this._view.multiSelectDeleteBtn.click(function(){
+            //collect files
+            var checkboxPerFileItems = this._view.multiSelectFieldSet.contentItems;
+            this._selectedFiles =[];
+            for (var i=0;i<checkboxPerFileItems.length;i++){
+                if(checkboxPerFileItems[i].checkbox.is(':checked')){
+                    this._selectedFiles.push(checkboxPerFileItems[i].file);
+                }
+            }
+            //check list
+            if (this._selectedFiles.length == 0){
+                this._view.multiSelectInfoLabel.text("Please select at least one file.");
+                this._view.multiSelectInfoLabel.slideDown().delay(1000).fadeOut(400);
+                return;
+            }
+            //call delete dialog
+            this._view.multiSelectDialog.popup("close");
+            this._showDeletePopup();
+        }.bind(this));
+
         this._view.deleteTaskItem.click(function(){
             this._closeActionPopup();
-            this._lockUI(false);
-            setTimeout(function(){
-                this._unlockUI();
-                this._view.deleteFileNameLabel.text(this._model.selectedFile.name);
-                this._view.deleteDialog.popup("open");
-            }.bind(this), 1000);
+            this._showDeletePopup();
         }.bind(this));
 
         this._view.deleteFileOkBtn.on("click",function(){
@@ -182,8 +245,10 @@ var PresenterPrototype = {
                 liEl.append(caption);
                 if (selectedFiles.length != 0){
                     me._view.addFolderTopBtn.fadeIn();
+                    me._view.multiSelectTopBtn.fadeIn();
                 } else {
                     me._view.addFolderTopBtn.fadeOut();
+                    me._view.multiSelectTopBtn.fadeOut();
                 }
                 return liEl;
             },
@@ -208,6 +273,7 @@ var PresenterPrototype = {
                         file:itFolder
                     },function(event){
                         me._model.selectedFile = event.data.file;
+                        me._selectedFiles = [event.data.file];
                         me._view.copyTaskItem.slideUp();
                         me._view.taskChoosePopup.popup("open",{
                             x:event.clientX,
@@ -236,6 +302,7 @@ var PresenterPrototype = {
                         file:itFile
                     },function(event){
                         me._model.selectedFile = event.data.file;
+                        me._selectedFiles = [event.data.file];
                         me._view.copyTaskItem.slideDown();
                         me._view.taskChoosePopup.popup("open",{
                             x:event.clientX,
@@ -408,13 +475,13 @@ var PresenterPrototype = {
             var link = this._view.downloadFileUrlLink.attr("href");
 
             if (distFolder==null) {
-                this._view.downloadFileInfoLabel.text("Please select destination folder.")
+                this._view.downloadFileInfoLabel.text("Please select destination folder.");
                 this._view.downloadFileInfoLabel.slideDown().delay(1000).fadeOut(400);
                 return;
             }
 
             if (fileName==".") {
-                this._view.downloadFileInfoLabel.text("Please select file name.")
+                this._view.downloadFileInfoLabel.text("Please select file name.");
                 this._view.downloadFileInfoLabel.slideDown().delay(1000).fadeOut(400);
                 return;
             }
@@ -431,7 +498,7 @@ var PresenterPrototype = {
                 }
                 this._view.downloadFileBrowserPanel.slideUp();
             }.bind(this), function(){
-                alert("Ooops. Something bad...")
+                alert("Ooops. Something bad...");
                 this._unlockUI();
             }.bind(this));
         }.bind(me));

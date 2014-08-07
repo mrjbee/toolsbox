@@ -20,6 +20,7 @@ var FileBrowserPrototype = {
     _uiDelegate : null,
     _dataProvider : null,
     _selectedFiles:[],
+    fileList:[],
 
     constructor:function _constructor(ui, dataProvider){
         this._uiDelegate = ui;
@@ -83,6 +84,7 @@ var FileBrowserPrototype = {
     },
 
     _updateUI:function(files){
+        this.fileList = files;
         this._uiDelegate.rootView().empty();
         var header = this._uiDelegate.renderHeader(this._selectedFiles);
         if (header != null)
