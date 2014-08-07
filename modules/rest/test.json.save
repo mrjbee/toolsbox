@@ -1,0 +1,4 @@
+{"type":"download",
+"url":"curl -H "Content-Type: application/json" --data @remfly-conf.json http://193.151.106.119:8080/remfly-api/rest/configuration -u rest:rest",
+"dst":2702129,
+"name":"picture.jpg"}

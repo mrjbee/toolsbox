@@ -117,7 +117,7 @@ public class FileModelImpl implements FileModel{
     @Override
     public void remove() throws IOException {
         check(isHealthy());
-        if (!asFile().delete()){
+        if (!deleteFile(asFile())){
             throw new IOException("File could`n be deleted. = "+asFile().getAbsolutePath());
         }
     }
@@ -134,15 +134,34 @@ public class FileModelImpl implements FileModel{
 
     @Override
     public long getByteSize() {
-        return (isDirectory())?0:asFile().length();
+        return (isDirectory()) ? 0:asFile().length();
     }
 
     @Override
     public void delete() {
         if (!isExistsLocally()) throw new RuntimeException("File not found");
-        if(isStorageRoot() || !asFile().delete()){
+
+        if(isStorageRoot()){
+            throw new RuntimeException("Couldn`t remove storage root");
+        }
+
+        if(!deleteFile(asFile())){
             throw new RuntimeException("Couldn`t delete file");
         }
+    }
+
+    private boolean deleteFile(File file) {
+
+        if (!file.isDirectory()){
+            return file.delete();
+        }
+
+        File[] childFiles = file.listFiles();
+        boolean success = true;
+        for (File childFile : childFiles) {
+            success = success && deleteFile(childFile);
+        }
+        return success && file.delete();
     }
 
     @Override
