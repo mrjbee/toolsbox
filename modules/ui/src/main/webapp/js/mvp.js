@@ -32,6 +32,7 @@ function initMVP(){
         copyDialogRemoveCheckBox:$("#copyDialogRemoveCheckBox"),
         copyDialogInfoLabel:$("#copy-dialog-info-label"),
         copyDialogCopyBtn:$("#copy-dialog-copy-btn"),
+        copyDialogFileList:$("#copyDialogFileList"),
         tasksTabBtn:$("#tasks-tab-btn"),
         filesTabBtn:$("#file-tab-btn"),
         taskBrowserList:$("#task-browser-list"),

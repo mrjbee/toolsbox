@@ -27,7 +27,36 @@ var PresenterPrototype = {
         }.bind(this), 1000);
     },
 
-    constructor:function _constructor(model,view){
+    _collectSelectedFiles: function () {
+        var checkboxPerFileItems = this._view.multiSelectFieldSet.contentItems;
+        this._selectedFiles = [];
+        for (var i = 0; i < checkboxPerFileItems.length; i++) {
+            if (checkboxPerFileItems[i].checkbox.is(':checked')) {
+                this._selectedFiles.push(checkboxPerFileItems[i].file);
+            }
+        }
+    },
+
+    _showCopyDialog: function () {
+        this._lockUI(false);
+        setTimeout(function () {
+            this._copyBrowserView.moveToRoot(function () {
+                this._view.copyDialogFileList.empty();
+                var liEl;
+                for (var i = 0; i < this._selectedFiles.length; i++) {
+                    liEl = $(document.createElement("li"));
+                    liEl.append(this._selectedFiles[i].name);
+                    this._view.copyDialogFileList.append(liEl);
+                }
+
+
+                this._view.copyDialogInfoLabel.text("");
+                this._view.copyDialogRemoveCheckBox.attr("checked", false).checkboxradio("refresh");
+                this._view.copyDialog.popup("open");
+                this._unlockUI();
+            }.bind(this));
+        }.bind(this), 1000);
+    }, constructor:function _constructor(model,view){
         var me = this;
         this._model = model;
         this._view = view;
@@ -86,34 +115,39 @@ var PresenterPrototype = {
                 return;
             }
             this._view.copyDialog.popup("close")
-            this._lockUI(true);
-            this._model.addTask({
-                type:"copy",
-                srcFile:this._model.selectedFile.id,
-                dstFile:this._copyBrowserView.getOpenFolder().id,
-                removeRequired: this._view.copyDialogRemoveCheckBox.is(':checked')
-            }, function(){
-                this._unlockUI();
-            }.bind(this), function(status){
+            var unsuccessfulCallback = function(status){
                 this._unlockUI();
                 //TODO: implement error handling
                 alert("Sorry not implemented. Error = "+status);
-            }.bind(this));
+            }.bind(this);
+            this._lockUI(true);
+
+
+            var callbackFunction = function(index){
+                if(index<0){
+                    this._unlockUI();
+                    return;
+                }
+                this._model.addTask({
+                    type:"copy",
+                    srcFile:this._selectedFiles[index].id,
+                    dstFile:this._copyBrowserView.getOpenFolder().id,
+                    removeRequired: this._view.copyDialogRemoveCheckBox.is(':checked')
+                },callbackFunction.bind(this,(index-1)),unsuccessfulCallback);
+            };
+
+            this._model.addTask({
+                type:"copy",
+                srcFile:this._selectedFiles[this._selectedFiles.length-1].id,
+                dstFile:this._copyBrowserView.getOpenFolder().id,
+                removeRequired: this._view.copyDialogRemoveCheckBox.is(':checked')
+            },callbackFunction.bind(this,this._selectedFiles.length-2),unsuccessfulCallback);
+
         }.bind(this));
 
         this._view.copyTaskItem.click(function(){
             this._closeActionPopup();
-            this._lockUI(false);
-            setTimeout(function(){
-                this._copyBrowserView.moveToRoot(function(){
-                    var path = this._rootBrowserView.getSelectedPath()+"/"+this._model.selectedFile.name;
-                    this._view.copyDialogSrcFileName.text(path);
-                    this._view.copyDialogInfoLabel.text("");
-                    this._view.copyDialogRemoveCheckBox.attr("checked",false).checkboxradio("refresh");
-                    this._view.copyDialog.popup("open");
-                    this._unlockUI();
-                }.bind(this));
-            }.bind(this), 1000);
+            this._showCopyDialog();
         }.bind(this));
 
         this._view.renameTaskItem.click(function(){
@@ -188,22 +222,24 @@ var PresenterPrototype = {
             this._view.multiSelectDialog.popup("open");
         }.bind(this));
 
-        this._view.multiSelectDeleteBtn.click(function(){
-            //collect files
-            var checkboxPerFileItems = this._view.multiSelectFieldSet.contentItems;
-            this._selectedFiles =[];
-            for (var i=0;i<checkboxPerFileItems.length;i++){
-                if(checkboxPerFileItems[i].checkbox.is(':checked')){
-                    this._selectedFiles.push(checkboxPerFileItems[i].file);
-                }
-            }
-            //check list
+        this._view.multiSelectCopyBtn.click(function(){
+            this._collectSelectedFiles();
             if (this._selectedFiles.length == 0){
                 this._view.multiSelectInfoLabel.text("Please select at least one file.");
                 this._view.multiSelectInfoLabel.slideDown().delay(1000).fadeOut(400);
                 return;
             }
-            //call delete dialog
+            this._view.multiSelectDialog.popup("close");
+            this._showCopyDialog();
+        }.bind(this));
+
+        this._view.multiSelectDeleteBtn.click(function(){
+            this._collectSelectedFiles();
+            if (this._selectedFiles.length == 0){
+                this._view.multiSelectInfoLabel.text("Please select at least one file.");
+                this._view.multiSelectInfoLabel.slideDown().delay(1000).fadeOut(400);
+                return;
+            }
             this._view.multiSelectDialog.popup("close");
             this._showDeletePopup();
         }.bind(this));
@@ -216,13 +252,22 @@ var PresenterPrototype = {
         this._view.deleteFileOkBtn.on("click",function(){
             this._view.deleteDialog.popup("close");
             this._lockUI(false);
-            this._model.deleteFile(this._model.selectedFile.id, function(result){
+            var callbackFunction = function(index, result){
                 if (!result){
                     alert("Ooops! No luck with deletion.");
+                    this._unlockUI();
+                    this._rootBrowserView.refresh();
+                    return;
                 }
-                this._unlockUI();
-                this._rootBrowserView.refresh();
-            }.bind(this));
+                if (index < 0){
+                    this._unlockUI();
+                    this._rootBrowserView.refresh();
+                } else {
+                    this._model.deleteFile(this._selectedFiles[index].id, callbackFunction.bind(this, (index-1)));
+                }
+            };
+            this._model.deleteFile(this._selectedFiles[this._selectedFiles.length-1].id,
+                callbackFunction.bind(this, (this._selectedFiles.length-2)));
         }.bind(this));
 
         this._rootBrowserView = Object.create(FileBrowserPrototype);
